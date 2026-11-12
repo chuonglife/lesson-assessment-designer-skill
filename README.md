@@ -8,10 +8,11 @@ It works in Claude Code, the Claude desktop and web apps, and the Claude Agent S
 
 ![Three pages from the example pack: a test form with shuffled multiple-choice items, the answer key with an explanation for every option, and a four-level analytic rubric](assets/example-pages.png)
 
-It is the fourth skill in a set for course creators:
+It is the fifth skill in a set for course creators:
 - [Curriculum Designer](https://github.com/chuonglife/curriculum-designer-skill) designs the whole program.
 - [Lesson Content Writer](https://github.com/chuonglife/lesson-content-writer-skill) writes each lesson and its measurable objectives.
 - [Lesson Slide Designer](https://github.com/chuonglife/lesson-slide-designer-skill) turns each lesson into slides and a video script.
+- [Lesson Video Producer](https://github.com/chuonglife/lesson-video-producer-skill) turns the slides into a narrated, animated lesson video.
 - **Lesson Assessment Designer** writes the quiz, test and assignment for each lesson.
 
 ## Contents
