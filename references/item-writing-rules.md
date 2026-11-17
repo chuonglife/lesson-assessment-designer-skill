@@ -151,7 +151,7 @@ A distractor must **not** be: absurd, so everyone rules it out; right under some
 - An unknown level; an item two or more levels below its objective.
 - A long dash anywhere; a stock AI phrase anywhere.
 - An assignment without objectives, criteria, task, deliverable, minutes or pass rule; criteria not adding up to the assignment's points; a rubric with fewer than 3 levels or a criterion without one descriptor per level.
-- A selected-response item without `explanation`.
+- A selected-response item without `explanation`; an `option_feedback` list that does not have one non-empty text per option.
 
 **Warnings** (built, read and decide):
 - Key at least 1.5 times as long as the longest distractor (and over 25 characters).

@@ -2,7 +2,7 @@
 
 **Lesson Assessment Designer is an open-source Agent Skill for Claude that turns the learning objectives of one lesson into a complete assessment pack: a test blueprint (table of specifications) mapped to Bloom's taxonomy, multiple choice, true/false, matching, fill-in-the-blank and short-answer items checked against item-writing rules, two shuffled test forms with answer sheets, an answer key that explains every option, and a practical assignment with a checklist or analytic rubric for the skills a quiz cannot measure.**
 
-You give Claude a lesson's objectives (and the lesson, if you have it). Claude decides what each objective needs, plans the blueprint, writes every item as data, and a Python script refuses to build the test until every objective is covered, every item has exactly one correct answer, no option says "all of the above", no true/false statement leans on "always" or "never", and the points add up. Then it builds the files in Markdown and Word, plus a Moodle GIFT file and a CSV.
+You give Claude a lesson's objectives (and the lesson, if you have it). Claude decides what each objective needs, plans the blueprint, writes every item as data, and a Python script refuses to build the test until every objective is covered, every item has exactly one correct answer, no option says "all of the above", no true/false statement leans on "always" or "never", and the points add up. Then it builds the files in Markdown and Word, plus a Moodle GIFT file, a CSV and a Udemy quiz sheet laid out to paste by hand.
 
 It works in Claude Code, the Claude desktop and web apps, and the Claude Agent SDK. For classroom teachers, university lecturers, corporate trainers, vocational instructors and online course creators on Udemy, Teachable, Coursera, Thinkific, Moodle or any LMS. English and Vietnamese labels built in, items in any language. MIT licensed.
 
@@ -41,6 +41,7 @@ One folder per test:
 | `04_Assignment_and_Rubric.md` + `.docx` | The assignment brief (task, deliverable, time, deadline, marker) and its checklist, criteria sheet or rubric, ready to share with learners before they start |
 | `quiz.gift` | Moodle GIFT import, with feedback |
 | `questions.csv` | One row per item, for spreadsheets and other LMS imports |
+| `udemy-quiz.md` | The quiz laid out field by field for the Udemy quiz screen (question, answers, explanation, correct answer, related lecture), to paste by hand; items Udemy quizzes cannot hold are listed at the end |
 | `_check/check-report.md` | Every blocking error and warning the checks found |
 
 An item in `assessment.json` looks like this:
@@ -68,25 +69,67 @@ An item in `assessment.json` looks like this:
 
 ## Install
 
+Pick one of the two Claude Code installs. "Personal" puts the skill in your home folder so every project sees it; "one project only" puts it inside the project folder you run `claude` from. Run the commands in a terminal: macOS and Linux use the bash block, Windows uses the PowerShell block (PowerShell is the default terminal in Windows 10 and 11; Git Bash users can use the bash block).
+
 **Claude Code (personal, all projects)**
+
+macOS, Linux, Git Bash:
 
 ```bash
 git clone https://github.com/chuonglife/lesson-assessment-designer-skill ~/.claude/skills/lesson-assessment-designer
-pip install -r ~/.claude/skills/lesson-assessment-designer/requirements.txt
+python3 -m pip install -r ~/.claude/skills/lesson-assessment-designer/requirements.txt
+```
+
+Windows PowerShell:
+
+```powershell
+git clone https://github.com/chuonglife/lesson-assessment-designer-skill "$HOME\.claude\skills\lesson-assessment-designer"
+python -m pip install -r "$HOME\.claude\skills\lesson-assessment-designer\requirements.txt"
 ```
 
 **Claude Code (one project only)**
 
+Open the terminal in your project folder first. Git creates the `.claude\skills` folders for you.
+
+macOS, Linux, Git Bash:
+
 ```bash
 git clone https://github.com/chuonglife/lesson-assessment-designer-skill .claude/skills/lesson-assessment-designer
-pip install -r .claude/skills/lesson-assessment-designer/requirements.txt
+python3 -m pip install -r .claude/skills/lesson-assessment-designer/requirements.txt
 ```
+
+Windows PowerShell:
+
+```powershell
+git clone https://github.com/chuonglife/lesson-assessment-designer-skill .claude\skills\lesson-assessment-designer
+python -m pip install -r .claude\skills\lesson-assessment-designer\requirements.txt
+```
+
+**Optional: keep the Python packages in the project (`.venv`)**
+
+The commands above install `python-docx` into your main Python. To keep it inside one project instead, make a virtual environment in the project folder and install into it. The skill tells Claude to use `.venv` when the project has one, so you do not have to activate it.
+
+macOS, Linux, Git Bash (on Git Bash for Windows the Python is `.venv/Scripts/python` instead of `.venv/bin/python`):
+
+```bash
+python3 -m venv .venv
+.venv/bin/python -m pip install -r .claude/skills/lesson-assessment-designer/requirements.txt
+```
+
+Windows PowerShell (for the personal install, use the `$HOME\.claude\skills\...` path from above):
+
+```powershell
+python -m venv .venv
+.venv\Scripts\python -m pip install -r .claude\skills\lesson-assessment-designer\requirements.txt
+```
+
+**Check that Claude Code sees it**: start `claude` in the project folder and type `/skills`, or ask "which skills do you have?". **Update later**: run `git pull` inside the skill folder (`git -C .claude/skills/lesson-assessment-designer pull`, or the `$HOME` path for the personal install).
 
 **Claude desktop or web app**
 
 Download `lesson-assessment-designer.skill` from the [latest release](https://github.com/chuonglife/lesson-assessment-designer-skill/releases/latest) and add it under Settings, Capabilities, Skills.
 
-**Requirements**: Python 3.8+. The checks, Markdown, GIFT and CSV use only the standard library; Word files need `python-docx` (installed by `requirements.txt`, or skip them with `--no-docx`).
+**Requirements**: Python 3.8+. The checks, Markdown, GIFT, CSV and Udemy sheet use only the standard library; Word files need `python-docx` (installed by `requirements.txt`, or skip them with `--no-docx`).
 
 ## Use it
 
@@ -151,7 +194,7 @@ An end-of-lesson test for "Write learning objectives with Bloom's taxonomy", a l
 - [02_Test_Form_A.md](examples/M02-L01-write-objectives-with-blooms-taxonomy/02_Test_Form_A.md) and [Form B](examples/M02-L01-write-objectives-with-blooms-taxonomy/02_Test_Form_B.md): 16 multiple choice, 3 true/false, 1 matching, 1 fill-in, 1 short answer; 25 minutes, 10 points, pass at 8
 - [03_Answer_Key_and_Marking_Guide.md](examples/M02-L01-write-objectives-with-blooms-taxonomy/03_Answer_Key_and_Marking_Guide.md)
 - [04_Assignment_and_Rubric.md](examples/M02-L01-write-objectives-with-blooms-taxonomy/04_Assignment_and_Rubric.md), a 4 x 4 analytic rubric for the objective table learners submit
-- [quiz.gift](examples/M02-L01-write-objectives-with-blooms-taxonomy/quiz.gift) and [questions.csv](examples/M02-L01-write-objectives-with-blooms-taxonomy/questions.csv)
+- [quiz.gift](examples/M02-L01-write-objectives-with-blooms-taxonomy/quiz.gift), [questions.csv](examples/M02-L01-write-objectives-with-blooms-taxonomy/questions.csv) and [udemy-quiz.md](examples/M02-L01-write-objectives-with-blooms-taxonomy/udemy-quiz.md)
 
 ## FAQ
 
@@ -177,7 +220,9 @@ Multiple choice (one best answer, 3 or 4 options), true or false, matching (with
 
 ### Can I import the quiz into Moodle, Canvas, Google Forms or Udemy?
 
-`quiz.gift` imports straight into Moodle (and other tools that read GIFT), with feedback for each question. `questions.csv` has one row per item for spreadsheets, Google Forms add-ons and other LMS importers. Udemy quizzes are entered question by question; the answer key gives you the explanation to paste for each one.
+`quiz.gift` imports straight into Moodle (and other tools that read GIFT), with feedback for each question. `questions.csv` has one row per item for spreadsheets, Google Forms add-ons and other LMS importers.
+
+Udemy: **you paste the quiz by hand.** Udemy lecture quizzes are multiple choice and are built question by question in the course Curriculum; Udemy publishes no import file for them. `udemy-quiz.md` lays out each question in the order of the Udemy screen (question, answers, the explanation to put under the answers, the correct answer, the related lecture), with the answers already in a spread-out order, so it is copy and paste. True/false items become two-answer questions; matching, fill-in-the-blank and short-answer items are listed at the end for you to rewrite or move to the assignment. Udemy practice tests (paid courses only) do have a CSV bulk upload, but its template is downloaded inside the instructor dashboard and its columns are not published, so the skill does not guess them. The sources are in `references/udemy-export.md`.
 
 ### Does it make different versions of the test?
 
@@ -204,10 +249,12 @@ references/objective-levels-and-tools.md  Bloom, Dave and Krathwohl levels, verb
 references/item-writing-rules.md          rules and examples for every item type, distractors from real mistakes, every check
 references/skill-assessment-tools.md      checklists, criteria sheets, holistic and analytic rubrics, the assignment format
 references/worked-example.md              the decisions behind the example test
-scripts/build_assessment.py               assessment.json -> blueprint, forms, key, rubric, GIFT, CSV, with every check
+references/udemy-export.md                what Udemy quizzes accept, the official sources checked, how udemy-quiz.md maps to the screen
+scripts/build_assessment.py               assessment.json -> blueprint, forms, key, rubric, GIFT, CSV, Udemy sheet, with every check
 templates/assessment.example.json         a complete test with all five item types and a rubric assignment
 examples/                                 a built example: input objectives, source JSON and every output
 assets/                                   README images
+CHANGELOG.md                              what changed in each version
 ```
 
 ## Sources and credits

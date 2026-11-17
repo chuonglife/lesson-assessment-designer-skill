@@ -13,6 +13,7 @@ Writes next to the JSON:
     04_Assignment_and_Rubric.md / .docx
     quiz.gift                       Moodle GIFT import file
     questions.csv                   one row per item, for LMS imports and spreadsheets
+    udemy-quiz.md                   every Udemy quiz field laid out to paste by hand (Udemy has no quiz import)
     _check/check-report.md          blocking errors and warnings
 
 Refuses to build while blocking errors remain (exit code 1).
@@ -92,6 +93,23 @@ L = {
         "built": "Built in {d}: {n} items, {f} forms, {a} assignments. Warnings: {w}.",
         "fix": "{n} blocking errors. Fix {p} and run again. Report: {r}",
         "checked": "Checked, no blocking errors.",
+        "ud_title": "UDEMY QUIZ (paste by hand)",
+        "ud_intro": ("Udemy has no file import for lecture quizzes, so this file is laid out field by field for copying. "
+                     "In the course Curriculum, add a Quiz with the title and description below, then add one multiple-choice "
+                     "question per block: paste the question, each answer and the explanation under it, mark the correct answer, "
+                     "and pick the related lecture. Answers are already in a spread-out order; keep it."),
+        "ud_quiz_title": "Quiz title", "ud_quiz_desc": "Quiz description",
+        "ud_q": "Question", "ud_answers": "Answers", "ud_expl": "Explanation",
+        "ud_expl_all": "Explanation (paste it under every answer, so whichever one the learner picks shows why)",
+        "ud_desc_default": "(optional: one line on what the quiz checks; set `udemy_description` in assessment.json)",
+        "ud_correct": "Correct answer", "ud_related": "Related lecture", "ud_answer_n": "Answer",
+        "ud_true": "True", "ud_false": "False",
+        "ud_left_h": "Not in this quiz",
+        "ud_left_txt": ("Udemy lecture quizzes take multiple-choice questions only. These items stay in the test files; "
+                        "rewrite them as multiple choice, or mark them in the assignment:"),
+        "ud_asg_txt": "Assignment: create it under Curriculum as an Assignment and paste the task and marking tool from `04_Assignment_and_Rubric.md`.",
+        "ud_built": "Udemy: {n} questions in udemy-quiz.md, to paste by hand.",
+        "ud_left_note": "{m} items are not multiple choice; they are listed at the end of that file.",
     },
     "vi": {
         "level": {"recall": "Nhận biết", "understand": "Thông hiểu",
@@ -153,6 +171,23 @@ L = {
         "built": "Đã sinh đề tại {d}: {n} câu, {f} mã đề, {a} bài tập. Cảnh báo: {w}.",
         "fix": "{n} lỗi chặn. Sửa {p} rồi chạy lại. Báo cáo: {r}",
         "checked": "Kiểm xong, không lỗi chặn.",
+        "ud_title": "QUIZ UDEMY (dán tay)",
+        "ud_intro": ("Udemy không nhập quiz bài giảng từ tệp, nên tệp này dàn sẵn từng ô để chép. "
+                     "Trong Curriculum của khóa, thêm một Quiz với tiêu đề và mô tả dưới đây, rồi mỗi khối là một câu nhiều lựa chọn: "
+                     "dán câu hỏi, từng đáp án và lời giải thích bên dưới, đánh dấu đáp án đúng, chọn bài giảng liên quan. "
+                     "Thứ tự đáp án đã xáo cho đều, giữ nguyên."),
+        "ud_quiz_title": "Tiêu đề quiz", "ud_quiz_desc": "Mô tả quiz",
+        "ud_q": "Câu hỏi", "ud_answers": "Các đáp án", "ud_expl": "Giải thích",
+        "ud_expl_all": "Giải thích (dán dưới mọi đáp án, người học chọn đáp án nào cũng thấy lý do)",
+        "ud_desc_default": "(tùy chọn: một dòng nói quiz kiểm gì; đặt `udemy_description` trong assessment.json)",
+        "ud_correct": "Đáp án đúng", "ud_related": "Bài giảng liên quan", "ud_answer_n": "Đáp án",
+        "ud_true": "Đúng", "ud_false": "Sai",
+        "ud_left_h": "Không đưa vào quiz này",
+        "ud_left_txt": ("Quiz bài giảng của Udemy chỉ nhận câu nhiều lựa chọn. Các câu sau vẫn nằm trong đề; "
+                        "viết lại thành câu nhiều lựa chọn hoặc chấm trong bài tập:"),
+        "ud_asg_txt": "Bài tập: tạo trong Curriculum dạng Assignment, dán nhiệm vụ và công cụ chấm từ `04_Assignment_and_Rubric.md`.",
+        "ud_built": "Udemy: {n} câu trong udemy-quiz.md, dán tay.",
+        "ud_left_note": "{m} câu không phải nhiều lựa chọn, liệt kê ở cuối tệp đó.",
     },
 }
 
@@ -311,6 +346,9 @@ def check(a):
             ans = q.get("answer")
             if not isinstance(ans, int) or not (0 <= ans < len(opts)):
                 E(f"Item {qid}: `answer` must be the index 0..{len(opts) - 1} of the correct option")
+            fb = q.get("option_feedback")
+            if fb is not None and (not isinstance(fb, list) or len(fb) != len(opts) or not all(str(x).strip() for x in fb)):
+                E(f"Item {qid}: `option_feedback` needs one non-empty text per option ({len(opts)})")
             for o in opts:
                 for b in BANNED_OPTIONS:
                     if re.search(rf"(^|\W){re.escape(b)}(\W|$)", o.lower()):
@@ -736,6 +774,49 @@ def write_csv(a, path):
                        + [ans, q.get("explanation", ""), q.get("source", "")])
 
 
+# ------------------------------------------------------------------ Udemy
+def udemy_quiz(a, T, parts):
+    """Udemy lecture quizzes are multiple choice and entered by hand: lay out every field to paste.
+
+    Uses form A's order, so the correct answers are already spread over the positions.
+    Returns (markdown, questions written, items left out)."""
+    s = [f"# {T['ud_title']}: {a['test_title']}", "", T["ud_intro"], "",
+         f"**{T['ud_quiz_title']}**: {a['test_title']}", "",
+         f"**{T['ud_quiz_desc']}**: {a.get('udemy_description', T['ud_desc_default'])}", ""]
+    n, left = 0, []
+    for t, items in parts:
+        if t not in ("mcq", "true-false"):
+            left += items
+            continue
+        for q in items:
+            n += 1
+            if t == "mcq":
+                opts, key = q["options"], q["answer"]
+                fb = q.get("option_feedback")
+                if fb:  # feedback follows its option through the shuffle
+                    src = next(x for x in a["items"] if x["id"] == q["id"])
+                    fb = [fb[src["options"].index(o)] for o in opts]
+            else:
+                opts, key = [T["ud_true"], T["ud_false"]], 0 if q["answer"] else 1
+                fb = None
+            s += ["---", "", f"## {T['ud_q']} {n} ({q['id']} · {q['objective']})", "",
+                  f"**{T['ud_q']}**", "", q["stem"], "", f"**{T['ud_answers']}**", ""]
+            for j, o in enumerate(opts):
+                s += [f"{T['ud_answer_n']} {j + 1}: {o}", ""]
+                if fb:
+                    s += [f"{T['ud_expl']}: {fb[j]}", ""]
+            if not fb:
+                s += [f"**{T['ud_expl_all']}**: {q.get('explanation', '')}", ""]
+            s += [f"**{T['ud_correct']}**: {T['ud_answer_n']} {key + 1}", "",
+                  f"**{T['ud_related']}**: {q.get('source', '')}", ""]
+    if left:
+        s += ["---", "", f"## {T['ud_left_h']}", "", T["ud_left_txt"], ""]
+        s += [f"- {q['id']} ({T['type'][q['type']]}, {q['objective']}): {q['stem']}" for q in left] + [""]
+    if a.get("assignments"):
+        s += ["---", "", T["ud_asg_txt"], ""]
+    return "\n".join(s) + "\n", n, len(left)
+
+
 # ------------------------------------------------------------------ DOCX
 def docx_from_md(md, path, lang):
     try:
@@ -845,6 +926,9 @@ def main():
         docx_from_md(asg, out / "04_Assignment_and_Rubric.docx", lang)
     (out / "quiz.gift").write_text(gift(a, T), encoding="utf-8")
     write_csv(a, out / "questions.csv")
+    ud, n_ud, n_left = udemy_quiz(a, T, forms[0][1])
+    (out / "udemy-quiz.md").write_text(ud, encoding="utf-8")
+    print(T["ud_built"].format(n=n_ud) + (" " + T["ud_left_note"].format(m=n_left) if n_left else ""))
     print(T["built"].format(d=out, n=len(a["items"]), f=n_forms, a=len(a.get("assignments", [])), w=len(warn)))
 
 

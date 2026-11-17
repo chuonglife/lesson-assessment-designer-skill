@@ -1,6 +1,6 @@
 ---
 name: lesson-assessment-designer
-description: Design the quiz, test and assignment for ONE lesson straight from its learning objectives, using a test blueprint (table of specifications) on Bloom's levels - multiple choice, true/false, matching, fill-in-the-blank and short-answer items, plus a practical assignment with a checklist or analytic rubric for skill objectives. Writes assessment.json; a script checks every item against item-writing rules (one key, no "all of the above", no giveaway words, every objective covered) and builds the blueprint, two shuffled forms with answer sheets (Markdown + Word), an answer key with feedback for every option, the rubric, a Moodle GIFT file and a CSV. Use it whenever the user wants a quiz, test, exam, question bank, knowledge check, end-of-module test, assignment, rubric or marking guide for a lesson, class, training or online course (Udemy, Teachable, Moodle, any LMS), even if they only paste the objectives or the lesson and say "make the quiz".
+description: Design the quiz, test and assignment for ONE lesson straight from its learning objectives, using a test blueprint (table of specifications) on Bloom's levels - multiple choice, true/false, matching, fill-in-the-blank and short-answer items, plus a practical assignment with a checklist or analytic rubric for skill objectives. Writes assessment.json; a script checks every item against item-writing rules (one key, no "all of the above", no giveaway words, every objective covered) and builds the blueprint, two shuffled forms with answer sheets (Markdown + Word), an answer key with feedback for every option, the rubric, a Moodle GIFT file, a CSV and a Udemy quiz sheet to paste by hand. Use it whenever the user wants a quiz, test, exam, question bank, knowledge check, end-of-module test, assignment, rubric or marking guide for a lesson, class, training or online course (Udemy, Teachable, Moodle, any LMS), even if they only paste the objectives or the lesson and say "make the quiz".
 ---
 
 # Lesson Assessment Designer
@@ -28,6 +28,7 @@ Output folder (default `assessments/<course-slug>/<lesson-folder>/`, or where th
 | `04_Assignment_and_Rubric.md` + `.docx` | Task, deliverable, time, deadline, and the checklist or rubric shared with learners in advance | script |
 | `quiz.gift` | Moodle GIFT import file | script |
 | `questions.csv` | One row per item, for spreadsheets and LMS imports | script |
+| `udemy-quiz.md` | The quiz laid out field by field for the Udemy quiz screen, to paste by hand; non-multiple-choice items listed at the end | script |
 | `_check/check-report.md` | Blocking errors and warnings | script |
 
 ## The six steps
@@ -69,7 +70,7 @@ Read `references/item-writing-rules.md`. The rules that matter most:
 - **Matching**: column titles; items of one kind per column; more options on the right than prompts on the left (3 to 5 or 6, at most 5 to 8 or 10); each option used once at most.
 - **Fill in the blank**: blank in the middle or at the end; a term, number or name, never a verb; at most 2 blanks; blanks of equal length; list every accepted spelling.
 - **Short answer**: the task, length, time and scoring criteria in the question; scoring split into points of 0.25 to 1; a model answer that passes.
-- Every selected-response item has an `explanation` (why the key is right and why each distractor is wrong, written for the learner who just chose wrong) and a `source` (section, video or slide to review).
+- Every selected-response item has an `explanation` (why the key is right and why each distractor is wrong, written for the learner who just chose wrong) and a `source` (section, video or slide to review). For a Udemy course, `source` becomes the related lecture, so name the lecture. Optional `option_feedback` (one short text per option, same order as `options`) gives each answer its own explanation in `udemy-quiz.md`; without it the one `explanation` is pasted under every answer.
 - A test with several item types is split into parts by type, never mixed.
 
 Write cell by cell and check each item against its objective as you go. Put the key anywhere; the script shuffles and spreads the answers.
@@ -97,15 +98,19 @@ Write criteria as **result noun + quality sign + something countable**. Include 
 python scripts/build_assessment.py <folder>/assessment.json
 ```
 
+**Which Python**: if the user's project has a `.venv` folder, run the script with that Python, not the global one: `.venv/Scripts/python` on Windows, `.venv/bin/python` on macOS and Linux (for example `.venv/Scripts/python -X utf8 <skill>/scripts/build_assessment.py ...`). That is where the user installed `python-docx`. With no `.venv`, use `python` (or `python3`). Do not install packages into the global Python when a `.venv` exists.
+
 The script **refuses to build while blocking errors remain**: an objective with no item, an item with no objective, not exactly one key, a banned option, true/false over 20% of the points or with a giveaway word, unequal selected-response points, totals that do not add up, an item two levels below its objective, a long dash or a stock AI phrase. Warnings (correct option much longer than the distractors, a letter used for over 40% of keys, short right column in matching, an item one level below an application objective, a negative stem not in capitals) still build; read them and decide. `--seed N` reshuffles, `--check-only` checks without building, `--no-docx` skips Word.
 
 4. Read `02_Test_Form_A.md` once more as a learner; compare `01_Test_Blueprint.md` with the plan from step 3.
 
-Use `python -X utf8` on Windows if the console mangles accents. Word output needs `python-docx` (`pip install python-docx`); everything else uses the standard library.
+Use `python -X utf8` on Windows if the console mangles accents. Word output needs `python-docx` (`python -m pip install -r requirements.txt`, into `.venv` if the project has one); everything else uses the standard library.
+
+**Udemy**: Udemy lecture quizzes are multiple choice only and have no import file, so the user pastes `udemy-quiz.md` by hand. Tell them that plainly. If the test is meant for Udemy, prefer multiple choice and true/false (it becomes a two-answer question), and put skills in the assignment; matching, fill-in and short-answer items end up in a "Not in this quiz" list. Set `udemy_description` for the quiz description line. Details and sources: `references/udemy-export.md`.
 
 ## Report back
 
-The folder path; the blueprint in short (topic x level: item counts); items per type; the assignment and its marking tool; the pass mark and why; the warnings you kept and why; assumptions (for example an objective you moved to the assignment, or objectives you derived because none were given).
+The folder path; the blueprint in short (topic x level: item counts); items per type; the assignment and its marking tool; the pass mark and why; the warnings you kept and why; for Udemy, that `udemy-quiz.md` is pasted by hand and which items it left out; assumptions (for example an objective you moved to the assignment, or objectives you derived because none were given).
 
 ## Language and voice
 
@@ -120,5 +125,6 @@ If a question is hard to write because the lesson is vague, the problem is the l
 - `references/item-writing-rules.md` - rules, strengths, weaknesses and examples for essay and oral questions and the four selected-response types; writing distractors from real mistakes; laying out the test and answer sheet; every check the script runs.
 - `references/skill-assessment-tools.md` - designing skill assessment; checklists, criteria sheets, holistic and analytic rubrics with steps and examples; writing criteria; the assignment JSON.
 - `references/worked-example.md` - the decisions behind the example in `examples/`, to calibrate difficulty, voice and explanation length.
+- `references/udemy-export.md` - what a Udemy quiz and practice test accept, the official pages checked and the date, how `udemy-quiz.md` maps to the Udemy screen.
 - `templates/assessment.example.json` - a complete test with all five item types and one rubric assignment.
 - `scripts/build_assessment.py` - checks and builds everything.
