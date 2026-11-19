@@ -1,5 +1,15 @@
 # Changelog
 
+## v1.1.2 - 2026-11-19
+
+The repository is now in English only. The Vietnamese sources stay in the credits, with their titles in English.
+
+- **Vietnamese output mode removed.** `"language": "vi"` no longer builds Vietnamese headings and instructions. The label table keeps its structure with one set, `en`, so another language can be added with the same keys. Any `language` other than `en` is a blocking error that names the fix (set `"en"`, or add a label set to `L`), exit code 1, no traceback. Items can still be written in any language.
+- The Vietnamese giveaway words, banned options, stock phrases and negation words are gone from the checks, along with the comma decimal separator and the Times New Roman font that came with `vi`.
+- README: the Vietnamese prompt example is replaced with an English one, and "Can it write tests in other languages?" says what the script does now. SKILL.md tells Claude to keep `language` at `en`. Source titles in the credits are in English and unaccented; the grade-band citation (Circular 04/2022/TT-BLDTBXH) moved from the main text of `references/test-design-process.md` to its Sources line and to the README credits.
+- A `language` that is not text (for example a list) gave a traceback; it is now one `ERROR` line.
+- English output is unchanged: rebuilding the example gives byte-identical Markdown, GIFT, CSV, Udemy sheet and check report.
+
 ## v1.1.1 - 2026-11-19
 
 Fixes from an audit that followed README on a clean Windows 11 machine and fed the script broken input.

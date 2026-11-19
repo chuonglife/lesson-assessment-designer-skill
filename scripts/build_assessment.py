@@ -33,6 +33,7 @@ SELECTED = ("mcq", "true-false", "matching", "fill-blank")
 LETTERS = "ABCDEFGHIJKL"
 EM_DASH, EN_DASH = chr(0x2014), chr(0x2013)
 
+# Output labels, one set per language. Only "en" ships; add a set with the same keys to support another language.
 L = {
     "en": {
         "level": {"recall": "Recall", "understand": "Understanding",
@@ -113,112 +114,28 @@ L = {
         "ud_built": "Udemy: {n} questions in udemy-quiz.md, to paste by hand.",
         "ud_left_note": "{m} items are not multiple choice; they are listed at the end of that file.",
     },
-    "vi": {
-        "level": {"recall": "Nhận biết", "understand": "Thông hiểu",
-                  "apply": "Vận dụng thấp", "higher-order": "Vận dụng cao"},
-        "type": {"mcq": "Nhiều lựa chọn", "true-false": "Đúng - Sai", "matching": "Ghép hợp",
-                 "fill-blank": "Điền khuyết", "short-answer": "Tự luận ngắn"},
-        "howto": {
-            "mcq": "Chọn MỘT phương án đúng nhất cho mỗi câu.",
-            "true-false": "Ghi Đ nếu phát biểu đúng, S nếu phát biểu sai.",
-            "matching": "Ghép mỗi mục ở cột trái với MỘT mục ở cột phải. Cột phải có mục thừa.",
-            "fill-blank": "Điền từ, cụm từ hoặc số thích hợp vào chỗ trống.",
-            "short-answer": "Trả lời ngắn gọn, đúng độ dài và thời gian ghi ở mỗi câu.",
-        },
-        "method": {"product": "Đánh giá sản phẩm", "performance": "Quan sát thao tác", "observation": "Quan sát",
-                   "role-play": "Đóng vai", "presentation": "Trình bày", "project": "Dự án"},
-        "T": "Đ", "F": "S", "TRUE": "ĐÚNG", "FALSE": "SAI",
-        "form": "Mã đề", "course": "Khóa", "lesson": "Bài", "time": "Thời gian", "minutes": "phút",
-        "points": "điểm", "pt": "đ", "total": "Tổng", "part": "Phần", "items": "câu", "one_item": "câu", "item": "Câu",
-        "question": "Câu", "answer": "Trả lời", "answer_sheet": "Phiếu trả lời",
-        "name_line": "Họ tên: ................................", "correct": "Số câu đúng: ......",
-        "no_material": "Không sử dụng tài liệu", "scoring_criteria": "Tiêu chí chấm", "requirements": "Yêu cầu",
-        "blueprint": "MA TRẬN ĐỀ", "purpose": "Mục đích", "format": "Hình thức",
-        "bp_matrix": "1. Ma trận chủ đề x mức độ", "topic": "Chủ đề", "planned": "dự kiến",
-        "by_type": "2. Số câu theo dạng", "type_h": "Dạng", "n_items": "Số câu",
-        "coverage": "3. Mục tiêu và công cụ đo", "objective": "Mục tiêu", "level_h": "Mức",
-        "text_h": "Nội dung", "test_items": "Câu hỏi", "assignments": "Bài tập", "none": "(không)",
-        "plan": "4. Kế hoạch đánh giá của bài", "instrument": "Công cụ", "when": "Thời điểm",
-        "measures": "Đo mục tiêu", "weight": "Tỉ trọng", "marker": "Người chấm", "pass": "Ngưỡng đạt",
-        "auto": "tự động / giảng viên", "counts": "tính vào đề",
-        "key_title": "ĐÁP ÁN VÀ HƯỚNG DẪN CHẤM", "pass_mark": "Ngưỡng đạt", "why": "Lý do",
-        "key_by_form": "1. Bảng đáp án theo mã đề", "orig": "Câu gốc", "see_guide": "xem hướng dẫn chấm",
-        "explain_h": "2. Giải thích từng câu (theo câu gốc)", "measures_obj": "đo",
-        "correct_is": "Đáp án", "TRUE_w": "ĐÚNG", "FALSE_w": "SAI",
-        "blank": "Chỗ trống", "accept": "chấp nhận", "point_needed": "Ý cần có",
-        "model": "Bài làm mẫu đạt", "explanation": "Giải thích", "review": "Xem lại",
-        "scale_h": "3. Thang điểm và quy đổi",
-        "scale_txt": "Tổng điểm đề: {t}. Câu trắc nghiệm điểm bằng nhau. Quy đổi: thang 10 = 10 x X / {t}; phần trăm = 100 x X / {t}.",
-        "raw": "Điểm đạt", "out10": "Thang 10", "pct": "Phần trăm", "bands": "Xếp loại",
-        "after_h": "4. Sau khi chấm",
-        "after_txt": "Câu nào dưới 60% người làm đúng: nội dung đó dạy chưa tới. Ghi tỉ lệ đúng và sửa mục bài tương ứng:",
-        "pct_right": "....... % đúng",
-        "feedback_txt": "Phản hồi cho người học phải đúng lúc, cụ thể, chỉ ra chỗ cần sửa và dễ làm theo. Với quiz online, phần giải thích ở mục 2 chính là phản hồi, nên viết cho người vừa chọn sai đọc.",
-        "asg_title": "BÀI TẬP VÀ CÔNG CỤ CHẤM", "no_asg": "Bài này không có bài tập nộp; mọi mục tiêu đo bằng đề.",
-        "measures_row": "Mục tiêu đo", "method_h": "Phương pháp", "time_h": "Thời gian làm", "deadline": "Hạn nộp",
-        "deliverable": "Sản phẩm nộp", "conditions": "Điều kiện", "marker_h": "Người chấm", "score_h": "Điểm",
-        "pass_when": "Đạt khi", "task": "Nhiệm vụ", "guidance": "Hướng dẫn",
-        "checklist_h": "Bảng kiểm (công bố trước cho người học)", "check_item": "Nội dung kiểm",
-        "yes": "Có", "no": "Không", "required": "Bắt buộc",
-        "criteria_h": "Bảng tiêu chí đánh giá", "criterion": "Tiêu chuẩn / Tiêu chí", "max_pts": "Điểm chuẩn", "given": "Điểm đánh giá",
-        "rubric_h": "Rubric phân tích (công bố trước cho người học)", "crit_pts": "Tiêu chí (điểm)",
-        "rubric_calc": "Điểm tiêu chí = điểm tối đa của tiêu chí x (mức đạt / {n}). Tổng tối đa {t}.",
-        "holistic_h": "Rubric tổng hợp", "level_c": "Mức", "desc": "Mô tả",
-        "self_check_h": "Tự chấm trước khi nộp",
-        "gift_matching": "// GIFT không có mục thừa ở cột phải; bản nhập LMS chỉ giữ các cặp đúng",
-        "gift_2blank": "// {id}: 2 chỗ trống, GIFT chỉ nhận một; tách thành 2 câu khi nhập",
-        "gift_essay": "// {id}: nhập thành câu tự luận; ý chấm và bài làm mẫu nằm trong hướng dẫn chấm",
-        "report": "Báo cáo kiểm máy", "blocking": "Lỗi chặn", "warnings": "Cảnh báo",
-        "blocking_h": "Lỗi chặn (phải sửa, chưa sinh đề)",
-        "warn_h": "Cảnh báo (đã sinh đề, đọc và quyết định)",
-        "built": "Đã sinh đề tại {d}: {n} câu, {f} mã đề, {a} bài tập. Cảnh báo: {w}.",
-        "fix": "{n} lỗi chặn. Sửa {p} rồi chạy lại. Báo cáo: {r}",
-        "checked": "Kiểm xong, không lỗi chặn.",
-        "ud_title": "QUIZ UDEMY (dán tay)",
-        "ud_intro": ("Udemy không nhập quiz bài giảng từ tệp, nên tệp này dàn sẵn từng ô để chép. "
-                     "Trong Curriculum của khóa, thêm một Quiz với tiêu đề và mô tả dưới đây, rồi mỗi khối là một câu nhiều lựa chọn: "
-                     "dán câu hỏi, từng đáp án và lời giải thích bên dưới, đánh dấu đáp án đúng, chọn bài giảng liên quan. "
-                     "Thứ tự đáp án đã xáo cho đều, giữ nguyên."),
-        "ud_quiz_title": "Tiêu đề quiz", "ud_quiz_desc": "Mô tả quiz",
-        "ud_q": "Câu hỏi", "ud_answers": "Các đáp án", "ud_expl": "Giải thích",
-        "ud_expl_all": "Giải thích (dán dưới mọi đáp án, người học chọn đáp án nào cũng thấy lý do)",
-        "ud_desc_default": "(tùy chọn: một dòng nói quiz kiểm gì; đặt `udemy_description` trong assessment.json)",
-        "ud_correct": "Đáp án đúng", "ud_related": "Bài giảng liên quan", "ud_answer_n": "Đáp án",
-        "ud_true": "Đúng", "ud_false": "Sai",
-        "ud_left_h": "Không đưa vào quiz này",
-        "ud_left_txt": ("Quiz bài giảng của Udemy chỉ nhận câu nhiều lựa chọn. Các câu sau vẫn nằm trong đề; "
-                        "viết lại thành câu nhiều lựa chọn hoặc chấm trong bài tập:"),
-        "ud_asg_txt": "Bài tập: tạo trong Curriculum dạng Assignment, dán nhiệm vụ và công cụ chấm từ `04_Assignment_and_Rubric.md`.",
-        "ud_built": "Udemy: {n} câu trong udemy-quiz.md, dán tay.",
-        "ud_left_note": "{m} câu không phải nhiều lựa chọn, liệt kê ở cuối tệp đó.",
-    },
 }
 
 # words that give away a true/false answer (absolutes tend to be false, hedges tend to be true)
 TELLTALE = {
     "en": ["always", "never", "all", "none", "every", "only", "sometimes", "usually", "often",
            "generally", "may", "might", "most"],
-    "vi": ["luôn luôn", "không bao giờ", "tất cả", "mọi", "đôi khi", "thường thường",
-           "có thể", "hầu hết", "duy nhất"],
 }
 # words that are also ordinary names: matched in lower case only, so "May" the month passes
 TELLTALE_LOWER_ONLY = {"may"}
 # an option is banned when it IS one of these (a few closing words such as "are correct" allowed),
 # not when the words merely occur inside a longer option ("Group A and B together" passes)
 BANNED_PHRASES = ["all of the above", "none of the above", "all of these", "none of these",
-                  "all the above", "tất cả các đáp án", "tất cả các phương án", "tất cả đáp án",
-                  "tất cả phương án", "không có đáp án nào", "không có phương án nào"]
+                  "all the above"]
 BANNED_LETTERS = re.compile(
-    r"^(both |cả |only )?(options? |answers? |đáp án |phương án )?[a-l](\s*,\s*[a-l])*,?\s+(and|và|&)\s+[a-l]"
-    r"(\s+(only|are correct|are true|are right|đúng|đều đúng))?$")
+    r"^(both |only )?(options? |answers? )?[a-l](\s*,\s*[a-l])*,?\s+(and|&)\s+[a-l]"
+    r"(\s+(only|are correct|are true|are right))?$")
 STOCK_PHRASES = ["delve", "in today's fast-paced", "fast-paced world", "game-changer", "game changer",
                  "plays a crucial role", "plays a vital role", "it is important to note",
                  "it's important to note", "unlock the power", "ever-evolving", "let's dive",
-                 "in the realm of", "tapestry",
-                 "trong thế giới ngày nay", "không thể phủ nhận", "đóng vai trò quan trọng",
-                 "hãy cùng khám phá", "đó là lý do tại sao", "ngày càng trở nên"]
-NEGATION = {"en": r"\b(not|except|false|incorrect|least)\b", "vi": r"\b(không|sai|ngoại trừ|trừ)\b"}
-COUNTABLE = r"\d|\bno\b|\bnone\b|\ball\b|\bevery\b|\beach\b|\bmissing\b|\bany\b|không|đủ|mọi|thiếu|hết"
+                 "in the realm of", "tapestry"]
+NEGATION = {"en": r"\b(not|except|false|incorrect|least)\b"}
+COUNTABLE = r"\d|\bno\b|\bnone\b|\ball\b|\bevery\b|\beach\b|\bmissing\b|\bany\b"
 
 
 # ------------------------------------------------------------------ helpers
@@ -235,8 +152,7 @@ def walk_strings(obj, path=""):
 
 def make_num(lang):
     def num(x):
-        s = f"{float(x):g}"
-        return s.replace(".", ",") if lang == "vi" else s
+        return f"{float(x):g}"
     return num
 
 
@@ -249,7 +165,7 @@ def words(s):
 
 
 def has_word(text, w, lang):
-    if lang == "vi" or " " in w:
+    if " " in w:
         return w in text.lower()
     if w in TELLTALE_LOWER_ONLY:
         return re.search(rf"\b{re.escape(w)}\b", text) is not None
@@ -452,7 +368,8 @@ def check(a):
         return err, warn
     lang = a.get("language", "en")
     if lang not in L:
-        E(f"`language` must be one of {list(L)}")
+        E(f"`language` is {lang!r}: this script has output labels for {list(L)} only. Set \"language\": \"en\" "
+          f"(items can still be written in any language), or add a label set for {lang!r} to L in build_assessment.py.")
         return err, warn
     num = make_num(lang)
     if a["purpose"] not in ("diagnostic", "formative", "summative"):
@@ -1042,8 +959,8 @@ def docx_from_md(md, path, lang):
     from docx.shared import Pt
     doc = Document()
     st = doc.styles["Normal"]
-    st.font.name = "Calibri" if lang == "en" else "Times New Roman"
-    st.font.size = Pt(11 if lang == "en" else 12)
+    st.font.name = "Calibri"
+    st.font.size = Pt(11)
     table = None
     for line in md.splitlines():
         if line.startswith("|"):
@@ -1115,7 +1032,7 @@ def fail(msg):
 
 
 def main():
-    # A Windows pipe is cp1252 by default: Vietnamese labels or an accented name in a message would crash print()
+    # A Windows pipe is cp1252 by default: an accented name in a message or an item would crash print()
     for stream in (sys.stdout, sys.stderr):
         try:
             stream.reconfigure(encoding="utf-8", errors="replace")
@@ -1140,7 +1057,9 @@ def main():
              f"the last entry, a missing comma or quote, a double quote inside a text without a backslash before it.")
     out = src.parent
     normalise(a)
-    lang = a.get("language", "en") if isinstance(a, dict) and a.get("language", "en") in L else "en"
+    lang = a.get("language", "en") if isinstance(a, dict) else "en"
+    if not isinstance(lang, str) or lang not in L:
+        lang = "en"
     T, num = L[lang], make_num(lang)
     (out / "_check").mkdir(parents=True, exist_ok=True)
     rp = out / "_check" / "check-report.md"
@@ -1208,12 +1127,10 @@ def main():
     write_report()
     print(T["ud_built"].format(n=n_ud) + (" " + T["ud_left_note"].format(m=n_left) if n_left else ""))
     n_items, n_asg = len(a["items"]), len(a.get("assignments", []))
-    if lang == "en":
-        def pl(n, w):
-            return f"{n} {w}" + ("" if n == 1 else "s")
-        print(T["built"].format(d=out, n=pl(n_items, "item"), f=pl(n_forms, "form"), a=pl(n_asg, "assignment"), w=len(warn)))
-    else:
-        print(T["built"].format(d=out, n=n_items, f=n_forms, a=n_asg, w=len(warn)))
+
+    def pl(n, w):
+        return f"{n} {w}" + ("" if n == 1 else "s")
+    print(T["built"].format(d=out, n=pl(n_items, "item"), f=pl(n_forms, "form"), a=pl(n_asg, "assignment"), w=len(warn)))
 
 
 if __name__ == "__main__":

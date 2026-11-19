@@ -4,7 +4,7 @@
 
 You give Claude a lesson's objectives (and the lesson, if you have it). Claude decides what each objective needs, plans the blueprint, writes every item as data, and a Python script refuses to build the test until every objective is covered, every item has exactly one correct answer, no option says "all of the above", no true/false statement leans on "always" or "never", and the points add up. Then it builds the files in Markdown and Word, plus a Moodle GIFT file, a CSV and a Udemy quiz sheet laid out to paste by hand.
 
-It works in Claude Code, the Claude desktop and web apps, and the Claude Agent SDK. For classroom teachers, university lecturers, corporate trainers, vocational instructors and online course creators on Udemy, Teachable, Coursera, Thinkific, Moodle or any LMS. English and Vietnamese labels built in, items in any language. MIT licensed.
+It works in Claude Code, the Claude desktop and web apps, and the Claude Agent SDK. For classroom teachers, university lecturers, corporate trainers, vocational instructors and online course creators on Udemy, Teachable, Coursera, Thinkific, Moodle or any LMS. Items in any language; headings and instructions in English. MIT licensed.
 
 ![Three pages from the example pack: a test form with shuffled multiple-choice items, the answer key with an explanation for every option, and a four-level analytic rubric](assets/example-pages.png)
 
@@ -164,7 +164,7 @@ Write a 6-question quiz with feedback for each answer, and a rubric for the pric
 ```
 
 ```
-Soạn đề kiểm tra 15 phút cho bài này, tiếng Việt, có ma trận đề và đáp án.
+Write a 15-minute test for this lesson with a blueprint and an answer key.
 ```
 
 If you only paste the lesson, the skill drafts measurable objectives first, lists them as assumptions, and builds the test on those. For a whole course, ask lesson by lesson.
@@ -247,7 +247,7 @@ Yes. Two forms by default (set `"forms"` for more): the same items, shuffled ord
 
 ### Can it write tests in other languages?
 
-Items are written in the language of your request. Headings, instructions and the answer sheet come in English or Vietnamese (`"language": "en"` or `"vi"`); add a label set in the script for another language. The giveaway-word and stock-phrase checks cover English and Vietnamese.
+Items are written in the language of your request. Headings, instructions and the answer sheet come in English (`"language": "en"`, the default). Any other `language` value is a blocking error that names the fix, so nothing half-translated is built. To support another language, add a label set with the same keys to `L` in `scripts/build_assessment.py`, plus its giveaway words in `TELLTALE` and negation words in `NEGATION`. The giveaway-word and stock-phrase checks cover English only.
 
 ### Do I need the other skills in the set?
 
@@ -276,8 +276,9 @@ CHANGELOG.md                              what changed in each version
 
 ## Sources and credits
 
-- Institute of Technical Education, Ho Chi Minh City University of Technology and Education, Module 06 *Assessment in teaching* (Đánh giá trong dạy học): Lesson 1, planning assessment; Lesson 2, designing assessment tools (written, oral and selected-response tests, checklists, criteria sheets, holistic and analytic rubrics); Lesson 3, analysing and using results; and the summary table of objective levels, verbs and assessment methods.
-- Vietnam Ministry of Education and Training, guidance 8773/BGDĐT-GDTrH (30 December 2010) on writing tests with a blueprint; Dang Thi Dieu Hien (2014), lecture notes on assessment in education.
+- Institute of Technical Education, Ho Chi Minh City University of Technology and Education, Module 06 *Assessment in teaching*: Lesson 1, planning assessment; Lesson 2, designing assessment tools (written, oral and selected-response tests, checklists, criteria sheets, holistic and analytic rubrics); Lesson 3, analysing and using results; and the summary table of objective levels, verbs and assessment methods.
+- Vietnam Ministry of Education and Training, guidance 8773/BGDDT-GDTrH (30 December 2010) on writing tests with a blueprint; Dang Thi Dieu Hien (2014), lecture notes on assessment in education.
+- Circular 04/2022/TT-BLDTBXH (Vietnam), Article 31: the example letter bands (A 8.5-10 down to F below 4.0) in `references/test-design-process.md`.
 - Anderson, L. W. and Krathwohl, D. R. (eds.) (2001), *A Taxonomy for Learning, Teaching, and Assessing*, Longman.
 - Dave, R. H. (1970/1975), psychomotor levels; Krathwohl, D. R., Bloom, B. S. and Masia, B. B. (1964/1973), *Taxonomy of Educational Objectives, Handbook II: Affective Domain*.
 

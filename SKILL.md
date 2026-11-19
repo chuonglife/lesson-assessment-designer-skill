@@ -108,7 +108,7 @@ The script **refuses to build while blocking errors remain**: a JSON that cannot
 
 4. Read `02_Test_Form_A.md` once more as a learner; compare `01_Test_Blueprint.md` with the plan from step 3.
 
-The script prints in UTF-8 on every system, so accents and Vietnamese labels are safe in a Windows pipe. Word output needs `python-docx` (`python -m pip install -r requirements.txt`, into `.venv` if the project has one); everything else uses the standard library. Numbers typed without quotes as options or accepted answers (`"options": [10, 20, 30, 40]`) are read as text.
+The script prints in UTF-8 on every system, so accented names and items in any language are safe in a Windows pipe. Word output needs `python-docx` (`python -m pip install -r requirements.txt`, into `.venv` if the project has one); everything else uses the standard library. Numbers typed without quotes as options or accepted answers (`"options": [10, 20, 30, 40]`) are read as text.
 
 **Moodle**: `quiz.gift` carries multiple choice, true/false, matching (correct pairs only, GIFT has no extra options) and one-blank fill-in with the explanation as feedback, and a short answer as an essay question. A two-blank fill-in is left out of the GIFT file. The script warns about each and names the items; pass that on to the user. If the test is meant for Moodle import, write fill-in items with one blank.
 
@@ -120,7 +120,7 @@ The folder path; the blueprint in short (topic x level: item counts); items per 
 
 ## Language and voice
 
-Write the test in the language of the user's request and set `language` (`en` or `vi`) so headings, instructions and the answer sheet match. Stems and options are short, plain and neutral. Scenarios have a person, a place and numbers ("Hannah teaches Year 9 in Leeds and writes..."). Explanations read like a colleague talking: one or two sentences, pointing at exactly where learners go wrong. No long dashes, no stock phrases ("delve", "in today's fast-paced world", "plays a crucial role"), no tidy triplets. Assignments and rubrics stay brief and administrative.
+Write the items in the language of the user's request. Headings, instructions and the answer sheet are English only: keep `language` at `en` (any other value is a blocking error), and tell the user when the items are in another language that the labels around them stay English. Stems and options are short, plain and neutral. Scenarios have a person, a place and numbers ("Hannah teaches Year 9 in Leeds and writes..."). Explanations read like a colleague talking: one or two sentences, pointing at exactly where learners go wrong. No long dashes, no stock phrases ("delve", "in today's fast-paced world", "plays a crucial role"), no tidy triplets. Assignments and rubrics stay brief and administrative.
 
 If a question is hard to write because the lesson is vague, the problem is the lesson or the objective, not the item: say so, and suggest the fix (a countable standard, a split objective, a missing example) rather than writing a vague item.
 

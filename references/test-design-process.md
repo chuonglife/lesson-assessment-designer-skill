@@ -1,6 +1,6 @@
 # Test design process and the test blueprint
 
-Sources: *Guidance on writing written and multiple-choice tests with a test blueprint* (Vietnam Ministry of Education and Training, guidance 8773/BGDDT-GDTrH, 30 December 2010; Dang Thi Dieu Hien, 2014); Module 06 *Assessment in teaching*, Lesson 1 (planning assessment), Lesson 2 (designing assessment tools), Lesson 3 (analysing and using results), Institute of Technical Education, Ho Chi Minh City University of Technology and Education.
+Sources: *Guidance on writing written and multiple-choice tests with a test blueprint* (Vietnam Ministry of Education and Training, guidance 8773/BGDDT-GDTrH, 30 December 2010; Dang Thi Dieu Hien, 2014); Module 06 *Assessment in teaching*, Lesson 1 (planning assessment), Lesson 2 (designing assessment tools), Lesson 3 (analysing and using results), Institute of Technical Education, Ho Chi Minh City University of Technology and Education. Example grade bands in section 7: Circular 04/2022/TT-BLDTBXH, Article 31 (Vietnam).
 
 ## Contents
 
@@ -133,7 +133,7 @@ Ten planning steps (Module 06, Lesson 1): (1) objectives, type, level and scope;
 
 - **Quantitative**: means for individuals and groups; minimum, maximum, median, mode, standard deviation. Any item fewer than 60% of learners answer correctly points to content that was not taught well enough; the "After marking" section of the key lists every item with its source section for this.
 - **Qualitative**: comments, checklists, observation sheets → a profile or a criteria matrix → recognise or not yet; rubrics.
-- **Grading**: use the institution's scale. Many vocational systems use letter bands such as A 8.5-10, B 7.0-8.4, C 5.5-6.9, D 4.0-5.4, F below 4.0 (Vietnam, Circular 04/2022/TT-BLDTBXH, Article 31); add yours as `grade_bands`.
+- **Grading**: use the institution's scale. Many vocational systems use letter bands such as A 8.5-10, B 7.0-8.4, C 5.5-6.9, D 4.0-5.4, F below 4.0; add yours as `grade_bands`.
 - **Feedback** must be timely, positive, specific (shows what to improve), easy to understand, accurate, and let the learner do better. Channels: face to face, written (score sheets, comment forms), messages, the course platform. In an online quiz the feedback is the explanation shown after the answer, so write it for the learner who just chose wrong.
 - **Use**: adjust teaching (rerecord a video, fix a slide, add an example), decide completion, grade, and improve the program.
 
