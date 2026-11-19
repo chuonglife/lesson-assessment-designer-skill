@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.1.4 - 2026-11-19
+
+- **Output follows the language the user writes in.** This replaces the English-default wording of the previous release: whatever language the request is in, the lesson text comes back in it. Only fixed labels that ship in English stay English.
+
 ## v1.1.3 - 2026-11-19
 
 - **English is the default output language,** stated in SKILL.md: another language only when the user asks for it or the material is in it. The docs no longer show a Vietnamese language code as an example, so nobody reads it as a supported option.
