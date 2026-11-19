@@ -1,5 +1,19 @@
 # Changelog
 
+## v1.1.1 - 2026-11-19
+
+Fixes from an audit that followed README on a clean Windows 11 machine and fed the script broken input.
+
+- **Vietnamese labels no longer crash in a Windows pipe.** With `"language": "vi"`, or an accented name inside an error message, the script died with `UnicodeEncodeError` when its output was piped (Git Bash, Claude Code). It now prints in UTF-8 on every system; `-X utf8` is no longer needed.
+- **Missing `python-docx` is said out loud.** The build used to skip the Word files in silence and still print "Built". It now warns, names the Python it ran with and prints the exact install command, on the console and in `_check/check-report.md`. SKILL.md tells Claude what to do with that warning.
+- **Broken input gets a message, not a traceback.** A file that is missing or not valid JSON, an item without `id`, an objective without `code`, a topic without `name`, an assignment without `title`, points written as text, a `scoring` entry without `point`: each is one `ERROR` line that names the item and the field, exit code 1. A JSON saved with a byte order mark (Windows PowerShell does that) is read normally. Numbers typed without quotes as options or accepted answers (`[10, 20, 30, 40]`) are read as text.
+- **`quiz.gift` says what it leaves out.** One warning names every item the GIFT file cannot carry in full: a two-blank fill-in (left out, GIFT takes one blank per question), matching (correct pairs only) and short answer (an essay question without its scoring points). Matching and one-blank fill-in now carry the explanation as feedback. A `->` inside a question or option is written as an arrow character, because Moodle reads `=` together with `->` as a matching question. README and SKILL.md describe the file as it is.
+- **Fewer false alarms.** An option is banned only when the whole option is "all of the above", "both A and B" and the like, so "Group A and B together" passes. "May" with a capital is read as the month in a true/false statement.
+- **Install.** README starts with "Before you start": Git, Python and Claude Code with links, install commands and the commands to check them. The project `.venv` is now the main install path (system Python refuses `pip install` on current Debian, Ubuntu and Homebrew). Notes for Git Bash on Windows and for "Filename too long" in deep folders.
+- The note about a shuffle that could not spread the answer letters is now a counted warning in the check report. `--help` shows an example and the list of outputs. The built message says "1 assignment".
+- Example: `quiz.gift` gains feedback on the matching item and a comment on the short answer; the check report gains the GIFT warning (4 warnings instead of 3). All other outputs are byte-identical.
+- **Example in step with Lesson Content Writer v1.2.0.** The example lesson there now has 7 videos (the close is its own video), so `01_Learning_Objectives.md` is the new copy and one item's review source reads "Video 7 close". The Claude app install steps name the current menu path and say that code execution must be on.
+
 ## v1.1.0 - 2026-11-17
 
 Fixes from a test run by a new user on Windows 11 (Python 3.12 in a project `.venv`).

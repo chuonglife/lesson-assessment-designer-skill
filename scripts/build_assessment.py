@@ -16,7 +16,8 @@ Writes next to the JSON:
     udemy-quiz.md                   every Udemy quiz field laid out to paste by hand (Udemy has no quiz import)
     _check/check-report.md          blocking errors and warnings
 
-Refuses to build while blocking errors remain (exit code 1).
+Refuses to build while blocking errors remain (exit code 1). A file that cannot be read, or a
+missing or mistyped field, is reported the same way: one ERROR line each, no traceback.
 """
 import argparse
 import csv
@@ -87,11 +88,12 @@ L = {
         "self_check_h": "Self-check before submitting",
         "gift_matching": "// GIFT has no distractors on the right; the imported version keeps only the correct pairs",
         "gift_2blank": "// {id}: two blanks, GIFT takes one; split into two questions when importing",
+        "gift_essay": "// {id}: imports as an essay question; the scoring points and model answer are in the marking guide",
         "report": "Check report", "blocking": "Blocking errors", "warnings": "Warnings",
         "blocking_h": "Blocking errors (fix these; nothing was built)",
         "warn_h": "Warnings (pack was built; read and decide)",
-        "built": "Built in {d}: {n} items, {f} forms, {a} assignments. Warnings: {w}.",
-        "fix": "{n} blocking errors. Fix {p} and run again. Report: {r}",
+        "built": "Built in {d}: {n}, {f}, {a}. Warnings: {w}.",
+        "fix": "Blocking errors: {n}. Nothing was built. Fix {p} and run again. Report: {r}",
         "checked": "Checked, no blocking errors.",
         "ud_title": "UDEMY QUIZ (paste by hand)",
         "ud_intro": ("Udemy has no file import for lecture quizzes, so this file is laid out field by field for copying. "
@@ -165,6 +167,7 @@ L = {
         "self_check_h": "Tự chấm trước khi nộp",
         "gift_matching": "// GIFT không có mục thừa ở cột phải; bản nhập LMS chỉ giữ các cặp đúng",
         "gift_2blank": "// {id}: 2 chỗ trống, GIFT chỉ nhận một; tách thành 2 câu khi nhập",
+        "gift_essay": "// {id}: nhập thành câu tự luận; ý chấm và bài làm mẫu nằm trong hướng dẫn chấm",
         "report": "Báo cáo kiểm máy", "blocking": "Lỗi chặn", "warnings": "Cảnh báo",
         "blocking_h": "Lỗi chặn (phải sửa, chưa sinh đề)",
         "warn_h": "Cảnh báo (đã sinh đề, đọc và quyết định)",
@@ -198,10 +201,16 @@ TELLTALE = {
     "vi": ["luôn luôn", "không bao giờ", "tất cả", "mọi", "đôi khi", "thường thường",
            "có thể", "hầu hết", "duy nhất"],
 }
-BANNED_OPTIONS = ["all of the above", "none of the above", "both a and b", "both b and c",
-                  "a and b", "a and c", "b and c", "all of these", "none of these",
-                  "tất cả các đáp án", "tất cả các phương án", "tất cả đáp án", "không có đáp án nào",
-                  "không có phương án nào", "cả a và b", "cả b và c", "a và c đúng", "a và b đúng"]
+# words that are also ordinary names: matched in lower case only, so "May" the month passes
+TELLTALE_LOWER_ONLY = {"may"}
+# an option is banned when it IS one of these (a few closing words such as "are correct" allowed),
+# not when the words merely occur inside a longer option ("Group A and B together" passes)
+BANNED_PHRASES = ["all of the above", "none of the above", "all of these", "none of these",
+                  "all the above", "tất cả các đáp án", "tất cả các phương án", "tất cả đáp án",
+                  "tất cả phương án", "không có đáp án nào", "không có phương án nào"]
+BANNED_LETTERS = re.compile(
+    r"^(both |cả |only )?(options? |answers? |đáp án |phương án )?[a-l](\s*,\s*[a-l])*,?\s+(and|và|&)\s+[a-l]"
+    r"(\s+(only|are correct|are true|are right|đúng|đều đúng))?$")
 STOCK_PHRASES = ["delve", "in today's fast-paced", "fast-paced world", "game-changer", "game changer",
                  "plays a crucial role", "plays a vital role", "it is important to note",
                  "it's important to note", "unlock the power", "ever-evolving", "let's dive",
@@ -242,17 +251,203 @@ def words(s):
 def has_word(text, w, lang):
     if lang == "vi" or " " in w:
         return w in text.lower()
+    if w in TELLTALE_LOWER_ONLY:
+        return re.search(rf"\b{re.escape(w)}\b", text) is not None
     return re.search(rf"\b{re.escape(w)}\b", text.lower()) is not None
 
 
-# ------------------------------------------------------------------ checks
-def check(a):
-    err, warn = [], []
-    E, W = err.append, warn.append
+def banned_option(option):
+    """True when the whole option is "all of the above", "both A and B" and the like."""
+    o = re.sub(r"[\s.!]+$", "", str(option).strip().lower())
+    if BANNED_LETTERS.match(o):
+        return True
+    for b in BANNED_PHRASES:
+        if o.startswith(b) and len(o[len(b):].split()) <= 3:
+            return True
+    return False
+
+
+def is_num(x):
+    return isinstance(x, (int, float)) and not isinstance(x, bool)
+
+
+def as_text(x):
+    """Numbers written without quotes in the JSON (options 10, 20, 30; a blank that takes 4) become text."""
+    if isinstance(x, float):
+        return f"{x:g}"
+    return str(x) if is_num(x) else x
+
+
+def normalise(a):
+    """Turn numeric options, matching entries and accepted answers into strings, in place."""
+    if not isinstance(a, dict) or not isinstance(a.get("items"), list):
+        return
+    for q in a["items"]:
+        if not isinstance(q, dict):
+            continue
+        for k in ("options", "left", "right"):
+            if isinstance(q.get(k), list):
+                q[k] = [as_text(x) for x in q[k]]
+        if q.get("type") == "fill-blank" and isinstance(q.get("answer"), list):
+            q["answer"] = [[as_text(x) for x in b] if isinstance(b, list) else b for b in q["answer"]]
+
+
+def check_structure(a):
+    """Shape of the JSON: every field the builders read is there and has the right kind of value.
+
+    Returns a list of blocking errors. The content checks only run when this list is empty."""
+    err = []
+    E = err.append
+    if not isinstance(a, dict):
+        return ["The file must hold one JSON object { ... } with the test's fields"]
     for f in ["lesson_code", "lesson_title", "test_title", "purpose", "format", "minutes",
               "total_points", "objectives", "topics", "items"]:
         if f not in a:
             E(f"Missing required field `{f}`")
+    if err:
+        return err
+    for f in ["lesson_code", "lesson_title", "test_title"]:
+        if not isinstance(a[f], str) or not a[f].strip():
+            E(f"`{f}` must be text")
+    for f in ["minutes", "total_points"]:
+        if not is_num(a[f]) or a[f] <= 0:
+            E(f"`{f}` must be a number above 0 (no quotes), found {a[f]!r}")
+    for f, lo, hi in [("options_per_item", 2, len(LETTERS)), ("forms", 1, len(LETTERS))]:
+        if f in a and (not isinstance(a[f], int) or isinstance(a[f], bool) or not lo <= a[f] <= hi):
+            E(f"`{f}` must be a whole number from {lo} to {hi}, found {a[f]!r}")
+    for f in ["language", "purpose", "format", "course", "slug", "conditions", "instructions", "timing", "udemy_description"]:
+        if f in a and not isinstance(a[f], str):
+            E(f"`{f}` must be text")
+    if "pass_mark" in a and (not isinstance(a["pass_mark"], dict) or not is_num(a["pass_mark"].get("points", 0))):
+        E('`pass_mark` must look like {"points": 8, "reason": "..."}')
+    bands = a.get("grade_bands", [])
+    if not isinstance(bands, list) or any(not isinstance(b, dict) or "label" not in b or not is_num(b.get("min")) for b in bands):
+        E('`grade_bands` must be a list like [{"label": "A", "min": 8.5}]')
+
+    def rows(field, what):
+        v = a[field]
+        if not isinstance(v, list):
+            E(f"`{field}` must be a list [ ... ] of {what}")
+            return []
+        out = []
+        for i, x in enumerate(v):
+            if isinstance(x, dict):
+                out.append((i, x))
+            else:
+                E(f"`{field}[{i}]` must be an object {{ ... }} with its own fields, found {str(x)[:40]!r}")
+        return out
+
+    def code_of(x, field, i, key):
+        c = x.get(key)
+        if not isinstance(c, str) or not c.strip():
+            E(f"`{field}[{i}]` has no `{key}`")
+            return f"{field}[{i}]"
+        return c
+
+    seen = set()
+    for i, o in rows("objectives", "objectives"):
+        c = code_of(o, "objectives", i, "code")
+        if c in seen:
+            E(f"Objective {c}: duplicate code")
+        seen.add(c)
+        for f in ["text", "level", "measured_by"]:
+            if f in o and not isinstance(o[f], str):
+                E(f"Objective {c}: `{f}` must be text")
+        if "min_items" in o and not is_num(o["min_items"]):
+            E(f"Objective {c}: `min_items` must be a number")
+    if isinstance(a["objectives"], list) and not a["objectives"]:
+        E("`objectives` is empty; a test needs at least one objective")
+    seen = set()
+    for i, t in rows("topics", "topics"):
+        c = code_of(t, "topics", i, "code")
+        if c in seen:
+            E(f"Topic {c}: duplicate code")
+        seen.add(c)
+        if not isinstance(t.get("name"), str) or not t["name"].strip():
+            E(f"Topic {c}: missing `name`")
+        if t.get("planned_percent") is not None and not is_num(t["planned_percent"]):
+            E(f"Topic {c}: `planned_percent` must be a number")
+
+    for i, q in rows("items", "items"):
+        qid = code_of(q, "items", i, "id")
+        if "points" in q and not is_num(q["points"]):
+            E(f"Item {qid}: `points` must be a number (no quotes), found {q['points']!r}")
+        for f in ["type", "topic", "objective", "level", "stem", "explanation", "source", "requirements",
+                  "model_answer", "left_title", "right_title"]:
+            if f in q and not isinstance(q[f], str):
+                E(f"Item {qid}: `{f}` must be text, found {q[f]!r}")
+        t = q.get("type")
+        if t == "mcq":
+            if not isinstance(q.get("options", []), list) or any(not isinstance(o, str) for o in q.get("options", [])):
+                E(f"Item {qid}: `options` must be a list of texts")
+        elif t == "matching":
+            for f in ["left", "right"]:
+                if not isinstance(q.get(f, []), list) or any(not isinstance(o, str) for o in q.get(f, [])):
+                    E(f"Item {qid}: `{f}` must be a list of texts")
+            ans = q.get("answer", [])
+            if not isinstance(ans, list) or any(not isinstance(x, int) or isinstance(x, bool) for x in ans):
+                E(f"Item {qid}: `answer` must be a list of indexes into `right` (0 for the first), one per `left` item")
+        elif t == "fill-blank":
+            ans = q.get("answer")
+            if isinstance(ans, list) and any(isinstance(b, list) and any(not isinstance(x, str) for x in b) for b in ans):
+                E(f"Item {qid}: every accepted spelling in `answer` must be text")
+        elif t == "short-answer":
+            sc = q.get("scoring", [])
+            if not isinstance(sc, list):
+                E(f"Item {qid}: `scoring` must be a list")
+            else:
+                for j, x in enumerate(sc):
+                    if not isinstance(x, dict) or not isinstance(x.get("point"), str) or not x["point"].strip() or not is_num(x.get("points")):
+                        E(f'Item {qid}: `scoring[{j}]` must look like {{"point": "what to look for", "points": 0.5}}')
+
+    if "assignments" in a:
+        for i, g in rows("assignments", "assignments"):
+            gid = code_of(g, "assignments", i, "id")
+            if not isinstance(g.get("title"), str) or not g["title"].strip():
+                E(f"Assignment {gid}: missing `title`")
+            if "objectives" in g and (not isinstance(g["objectives"], list) or any(not isinstance(x, str) for x in g["objectives"])):
+                E(f"Assignment {gid}: `objectives` must be a list of objective codes")
+            for f in ["points", "minutes"]:
+                if f in g and not is_num(g[f]):
+                    E(f"Assignment {gid}: `{f}` must be a number (no quotes), found {g[f]!r}")
+            for f in ["task", "deliverable", "pass_rule", "guidance", "self_check", "deadline", "conditions", "marker", "when", "method"]:
+                if f in g and not isinstance(g[f], str):
+                    E(f"Assignment {gid}: `{f}` must be text")
+            tool = g.get("tool")
+            levels = g.get("levels", [])
+            if not isinstance(levels, list) or any(not isinstance(x, str) for x in levels):
+                E(f"Assignment {gid}: `levels` must be a list of level names")
+            if tool in ("criteria-sheet", "rubric") and not is_num(g.get("points")):
+                E(f"Assignment {gid}: numeric `points` is needed for a {tool}")
+            crit = g.get("criteria", [])
+            if not isinstance(crit, list):
+                E(f"Assignment {gid}: `criteria` must be a list")
+                continue
+            for j, c in enumerate(crit):
+                if not isinstance(c, dict):
+                    E(f"Assignment {gid}: `criteria[{j}]` must be an object {{ ... }}")
+                    continue
+                named = isinstance(c.get("name"), str) and c["name"].strip()
+                described = isinstance(c.get("description"), str) and c["description"].strip()
+                if tool == "holistic-rubric":
+                    if not (named or described):
+                        E(f"Assignment {gid}: `criteria[{j}]` needs a `description` (one per level)")
+                elif not named:
+                    E(f"Assignment {gid}: `criteria[{j}]` has no `name`")
+                if tool in ("criteria-sheet", "rubric") and not is_num(c.get("points")):
+                    E(f"Assignment {gid}: `criteria[{j}]` needs numeric `points`")
+                if "standard" in c and not isinstance(c["standard"], str):
+                    E(f"Assignment {gid}: `criteria[{j}].standard` must be text")
+                d = c.get("descriptors", [])
+                if not isinstance(d, list) or any(not isinstance(x, str) for x in d):
+                    E(f"Assignment {gid}: `criteria[{j}].descriptors` must be a list of texts, one per level")
+    return err
+
+
+# ------------------------------------------------------------------ checks
+def check(a):
+    err, warn = check_structure(a), []
+    E, W = err.append, warn.append
     if err:
         return err, warn
     lang = a.get("language", "en")
@@ -345,14 +540,14 @@ def check(a):
                 E(f"Item {qid}: duplicate options")
             ans = q.get("answer")
             if not isinstance(ans, int) or not (0 <= ans < len(opts)):
-                E(f"Item {qid}: `answer` must be the index 0..{len(opts) - 1} of the correct option")
+                E(f"Item {qid}: `answer` must be ONE whole number, the position of the correct option counting from 0"
+                  + (f" (0 to {len(opts) - 1})" if opts else ""))
             fb = q.get("option_feedback")
             if fb is not None and (not isinstance(fb, list) or len(fb) != len(opts) or not all(str(x).strip() for x in fb)):
                 E(f"Item {qid}: `option_feedback` needs one non-empty text per option ({len(opts)})")
             for o in opts:
-                for b in BANNED_OPTIONS:
-                    if re.search(rf"(^|\W){re.escape(b)}(\W|$)", o.lower()):
-                        E(f"Item {qid}: banned option '{o}'")
+                if banned_option(o):
+                    E(f"Item {qid}: banned option '{o}' (write a real distractor instead)")
             if isinstance(ans, int) and 0 <= ans < len(opts) and len(opts) > 1:
                 right = len(opts[ans])
                 longest_wrong = max(len(o) for i, o in enumerate(opts) if i != ans)
@@ -724,31 +919,47 @@ def gift_escape(t):
     return re.sub(r"([~=#{}:])", r"\\\1", t)
 
 
+def gift_plain(t):
+    """Escape for GIFT, and keep "->" out: Moodle reads an answer block holding both "=" and "->" as matching."""
+    return gift_escape(t.replace("->", chr(0x2192)))
+
+
 def gift(a, T):
+    """Return (GIFT text, notes on what the GIFT file leaves out)."""
+    notes = []
     s = [f"// {a['test_title']} · {a['lesson_code']} {a['lesson_title']}",
          f"$CATEGORY: {a.get('slug', 'course')}/{a['lesson_code']}", ""]
     for q in a["items"]:
-        ex = gift_escape(q.get("explanation", ""))
         t = q["type"]
+        ex = (gift_escape if t == "matching" else gift_plain)(q.get("explanation", ""))
+        fb = f"####{ex}" if ex.strip() else ""
         if t == "mcq":
-            s += [f"::{q['id']}::{gift_escape(q['stem'])} {{"]
-            s += [f"  {'=' if j == q['answer'] else '~'}{gift_escape(o)}" for j, o in enumerate(q["options"])]
-            s += [f"  ####{ex}", "}", ""]
+            s += [f"::{q['id']}::{gift_plain(q['stem'])} {{"]
+            s += [f"  {'=' if k == q['answer'] else '~'}{gift_plain(o)}" for k, o in enumerate(q["options"])]
+            s += ([f"  {fb}"] if fb else []) + ["}", ""]
         elif t == "true-false":
-            s += [f"::{q['id']}::{gift_escape(q['stem'])} {{{'TRUE' if q['answer'] else 'FALSE'}####{ex}}}", ""]
+            s += [f"::{q['id']}::{gift_plain(q['stem'])} {{{'TRUE' if q['answer'] else 'FALSE'}{fb}}}", ""]
         elif t == "matching":
             s += [T["gift_matching"], f"::{q['id']}::{gift_escape(q['stem'])} {{"]
-            s += [f"  ={gift_escape(q['left'][k])} -> {gift_escape(q['right'][i])}" for k, i in enumerate(q["answer"])]
-            s += ["}", ""]
+            s += [f"  ={gift_escape(q['left'][k])} -> {gift_escape(q['right'][n])}" for k, n in enumerate(q["answer"])]
+            s += ([f"  {fb}"] if fb else []) + ["}", ""]
+            extra = len(q["right"]) - len(q["answer"])
+            notes.append(f"{q['id']} (matching) keeps only its correct pairs, the {extra} extra right-column "
+                         f"{'option is' if extra == 1 else 'options are'} dropped")
         elif t == "fill-blank":
             if len(q["answer"]) == 1:
-                accepted = " ".join(f"={gift_escape(x)}" for x in q["answer"][0])
-                s += [f"::{q['id']}::" + re.sub(r"_{3,}", "{" + accepted + "}", gift_escape(q["stem"]), count=1), ""]
+                accepted = " ".join(f"={gift_plain(x)}" for x in q["answer"][0])
+                block = "{" + accepted + (f" {fb}" if fb else "") + "}"
+                # a function as replacement, so the backslashes of the escapes are not read as group references
+                s += [f"::{q['id']}::" + re.sub(r"_{3,}", lambda m: block, gift_plain(q["stem"]), count=1), ""]
             else:
                 s += [T["gift_2blank"].format(id=q["id"]), ""]
+                notes.append(f"{q['id']} (fill in the blank, two blanks) is LEFT OUT because GIFT takes one blank per "
+                             f"question, add it in the LMS by hand")
         elif t == "short-answer":
-            s += [f"::{q['id']}::{gift_escape(q['stem'])} {{}}", ""]
-    return "\n".join(s) + "\n"
+            s += [T["gift_essay"].format(id=q["id"]), f"::{q['id']}::{gift_plain(q['stem'])} {{}}", ""]
+            notes.append(f"{q['id']} (short answer) imports as an essay question without its scoring points")
+    return "\n".join(s) + "\n", notes
 
 
 def write_csv(a, path):
@@ -818,12 +1029,17 @@ def udemy_quiz(a, T, parts):
 
 
 # ------------------------------------------------------------------ DOCX
-def docx_from_md(md, path, lang):
+def docx_available():
     try:
-        from docx import Document
-        from docx.shared import Pt
+        import docx  # noqa: F401
+        return True
     except ImportError:
         return False
+
+
+def docx_from_md(md, path, lang):
+    from docx import Document
+    from docx.shared import Pt
     doc = Document()
     st = doc.styles["Normal"]
     st.font.name = "Calibri" if lang == "en" else "Times New Roman"
@@ -869,39 +1085,100 @@ def docx_from_md(md, path, lang):
                 else:
                     p.add_run(chunk.replace("*", ""))
     doc.save(str(path))
-    return True
 
 
 # ------------------------------------------------------------------ main
+HELP_EPILOG = """\
+example:
+  python build_assessment.py assessments/my-course/M01-L02/assessment.json
+  python build_assessment.py assessments/my-course/M01-L02/assessment.json --check-only
+
+written next to the JSON (start from a copy of templates/assessment.example.json in your own folder):
+  01_Test_Blueprint.md                      topics x cognitive levels, objective coverage, assessment plan
+  02_Test_Form_A.md / .docx, Form_B ...     learner copies with an answer sheet ("forms" sets how many)
+  03_Answer_Key_and_Marking_Guide.md / .docx
+  04_Assignment_and_Rubric.md / .docx
+  quiz.gift                                 Moodle GIFT import
+  questions.csv                             one row per item
+  udemy-quiz.md                             the quiz laid out to paste into Udemy by hand
+  _check/check-report.md                    blocking errors and warnings
+
+exit code 0: built (warnings are printed and listed in the check report).
+exit code 1: blocking errors, or the JSON could not be read; nothing is built.
+The .docx files need python-docx (python -m pip install -r requirements.txt); --no-docx skips them.
+"""
+
+
+def fail(msg):
+    print("ERROR  ", msg)
+    sys.exit(1)
+
+
 def main():
-    ap = argparse.ArgumentParser(description="Check an assessment.json and build the test pack.")
-    ap.add_argument("json")
-    ap.add_argument("--seed", type=int, default=7, help="change the shuffle")
-    ap.add_argument("--check-only", action="store_true", help="run the checks, build nothing")
+    # A Windows pipe is cp1252 by default: Vietnamese labels or an accented name in a message would crash print()
+    for stream in (sys.stdout, sys.stderr):
+        try:
+            stream.reconfigure(encoding="utf-8", errors="replace")
+        except (AttributeError, ValueError):
+            pass
+    ap = argparse.ArgumentParser(description="Check an assessment.json and build the test pack next to it.",
+                                 epilog=HELP_EPILOG, formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument("json", help="path to assessment.json; every output is written into the same folder")
+    ap.add_argument("--seed", type=int, default=7, help="change the shuffle of items and options (default 7)")
+    ap.add_argument("--check-only", action="store_true", help="run the checks and write the check report, build nothing")
     ap.add_argument("--no-docx", action="store_true", help="skip the Word files")
     args = ap.parse_args()
     src = Path(args.json)
-    a = json.loads(src.read_text(encoding="utf-8"))
+    if not src.is_file():
+        fail(f"File not found: {src}. Give the path to your assessment.json.")
+    try:
+        a = json.loads(src.read_text(encoding="utf-8-sig"))
+    except UnicodeDecodeError as e:
+        fail(f"Cannot read {src}: it is not saved as UTF-8 ({e.reason}, byte {e.start}). Save it as UTF-8 and run again.")
+    except json.JSONDecodeError as e:
+        fail(f"{src} is not valid JSON: {e.msg} at line {e.lineno}, column {e.colno}. Usual causes: a comma after "
+             f"the last entry, a missing comma or quote, a double quote inside a text without a backslash before it.")
     out = src.parent
-    lang = a.get("language", "en") if a.get("language", "en") in L else "en"
+    normalise(a)
+    lang = a.get("language", "en") if isinstance(a, dict) and a.get("language", "en") in L else "en"
     T, num = L[lang], make_num(lang)
     (out / "_check").mkdir(parents=True, exist_ok=True)
-    err, warn = check(a)
-    report = [f"# {T['report']}: {a.get('test_title', src.name)}", "", f"{T['blocking']}: {len(err)} · {T['warnings']}: {len(warn)}", ""]
-    if err:
-        report += [f"## {T['blocking_h']}", ""] + [f"- {x}" for x in err] + [""]
-    if warn:
-        report += [f"## {T['warn_h']}", ""] + [f"- {x}" for x in warn] + [""]
     rp = out / "_check" / "check-report.md"
-    rp.write_text("\n".join(report), encoding="utf-8")
+    title = a.get("test_title", src.name) if isinstance(a, dict) else src.name
+    err, warn = check(a)
+
+    def write_report():
+        report = [f"# {T['report']}: {title}", "", f"{T['blocking']}: {len(err)} · {T['warnings']}: {len(warn)}", ""]
+        if err:
+            report += [f"## {T['blocking_h']}", ""] + [f"- {x}" for x in err] + [""]
+        if warn:
+            report += [f"## {T['warn_h']}", ""] + [f"- {x}" for x in warn] + [""]
+        rp.write_text("\n".join(report), encoding="utf-8")
+
+    def W(x):
+        warn.append(x)
+        print("WARNING", x)
+
     for x in err:
         print("ERROR  ", x)
     for x in warn:
         print("WARNING", x)
     if err:
+        write_report()
         print("\n" + T["fix"].format(n=len(err), p=src, r=rp))
         sys.exit(1)
+    make_docx = not args.no_docx
+    if make_docx and not docx_available():
+        make_docx = False
+        req = Path(__file__).resolve().parent.parent / "requirements.txt"
+        W(f"Word files (.docx) NOT written: python-docx is not installed for this Python ({sys.executable}). "
+          f"Install it with: \"{sys.executable}\" -m pip install -r \"{req}\" and run again, "
+          f"or pass --no-docx if Markdown is enough.")
+    gift_text, gift_notes = gift(a, T)
+    if gift_notes:
+        W("quiz.gift does not carry the whole test: " + "; ".join(gift_notes) + ". The Markdown and Word files are complete.")
     if args.check_only:
+        write_report()
         print(T["checked"])
         return
     n_forms = int(a.get("forms", 2))
@@ -910,10 +1187,10 @@ def main():
         name = LETTERS[i]
         parts, note = shuffle_form(a, args.seed + i)
         if note:
-            print("WARNING", f"{T['form']} {name}: {note}")
+            W(f"{T['form']} {name}: {note}")
         md = md_form(a, T, num, name, parts)
         (out / f"02_Test_Form_{name}.md").write_text(md, encoding="utf-8")
-        if not args.no_docx:
+        if make_docx:
             docx_from_md(md, out / f"02_Test_Form_{name}.docx", lang)
         forms.append((name, parts))
     (out / "01_Test_Blueprint.md").write_text(md_blueprint(a, T, num), encoding="utf-8")
@@ -921,15 +1198,22 @@ def main():
     (out / "03_Answer_Key_and_Marking_Guide.md").write_text(key, encoding="utf-8")
     asg = md_assignments(a, T, num)
     (out / "04_Assignment_and_Rubric.md").write_text(asg, encoding="utf-8")
-    if not args.no_docx:
+    if make_docx:
         docx_from_md(key, out / "03_Answer_Key_and_Marking_Guide.docx", lang)
         docx_from_md(asg, out / "04_Assignment_and_Rubric.docx", lang)
-    (out / "quiz.gift").write_text(gift(a, T), encoding="utf-8")
+    (out / "quiz.gift").write_text(gift_text, encoding="utf-8")
     write_csv(a, out / "questions.csv")
     ud, n_ud, n_left = udemy_quiz(a, T, forms[0][1])
     (out / "udemy-quiz.md").write_text(ud, encoding="utf-8")
+    write_report()
     print(T["ud_built"].format(n=n_ud) + (" " + T["ud_left_note"].format(m=n_left) if n_left else ""))
-    print(T["built"].format(d=out, n=len(a["items"]), f=n_forms, a=len(a.get("assignments", [])), w=len(warn)))
+    n_items, n_asg = len(a["items"]), len(a.get("assignments", []))
+    if lang == "en":
+        def pl(n, w):
+            return f"{n} {w}" + ("" if n == 1 else "s")
+        print(T["built"].format(d=out, n=pl(n_items, "item"), f=pl(n_forms, "form"), a=pl(n_asg, "assignment"), w=len(warn)))
+    else:
+        print(T["built"].format(d=out, n=n_items, f=n_forms, a=n_asg, w=len(warn)))
 
 
 if __name__ == "__main__":

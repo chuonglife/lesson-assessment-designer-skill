@@ -428,7 +428,7 @@ Answer 2: False
 
 **Correct answer**: Answer 1
 
-**Related lecture**: Video 5, section 3.1, step 4; Video 6 close
+**Related lecture**: Video 5, section 3.1, step 4; Video 7 close
 
 ---
 

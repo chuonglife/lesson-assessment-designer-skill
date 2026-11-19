@@ -1,6 +1,6 @@
 # Worked example: M02-L01, Write learning objectives with Bloom's taxonomy
 
-The full pack is in `examples/M02-L01-write-objectives-with-blooms-taxonomy/`; its `assessment.json` is also `templates/assessment.example.json`. Read this to calibrate **difficulty, voice and explanation length**, not to copy items.
+The source is `templates/assessment.example.json`. The built pack is in the GitHub repository under `examples/M02-L01-write-objectives-with-blooms-taxonomy/` (a clone has it; the packaged `.skill` does not, so copy the template to a scratch folder and build it there to see the files). Read this to calibrate **difficulty, voice and explanation length**, not to copy items.
 
 ## The brief
 
@@ -15,7 +15,7 @@ The lesson's objectives file (from the Lesson Content Writer example of the same
 | 3 Blueprint | 3 topics by video group: Bloom 35%, formula and checklist 55%, process 10%; levels 24 / 32 / 28 / 16 | Topic 2 has most teaching time and underpins the assignment; the 5-step process is measured mostly by the assignment, so it gets 2 items |
 | 4 Items | 16 multiple choice, 3 true or false, 1 matching (3 to 6), 1 fill in the blank, 1 short answer | Distractors come from the lesson's common mistakes table and the two scoring demonstrations in Video 6 |
 | 5 Points | 21 selected-response items x 0.4 = 8.4; short answer 1.6; total 10; pass 8 | The objectives say 8/10; 80% is common on Udemy |
-| 6 Review | Script: 0 blocking errors, 3 warnings kept | 3 true or false items at understanding level measure an application objective: kept, because they carry only 1.2 points and 7 application items already cover K2 |
+| 6 Review | Script: 0 blocking errors, 4 warnings kept | 3 true or false items at understanding level measure an application objective: kept, because they carry only 1.2 points and 7 application items already cover K2. The fourth says what `quiz.gift` cannot carry (the two-blank fill-in Q21, the extra options of matching Q19, the scoring points of Q22): kept, because this test is printed and pasted into Udemy, not imported into Moodle |
 
 ## Three items to calibrate the voice
 

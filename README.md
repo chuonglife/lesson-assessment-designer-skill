@@ -39,7 +39,7 @@ One folder per test:
 | `02_Test_Form_A.md` / `B` + `.docx` | Learner copies, grouped in parts by item type, items and options shuffled differently in each form, answer keys spread evenly over A to D, with an answer sheet |
 | `03_Answer_Key_and_Marking_Guide.md` + `.docx` | The key for each form; every item with why the answer is right and why each distractor is wrong; short-answer scoring points and a model answer; score conversion to 10 and to a percentage; grade bands; a facility list to fill in after marking |
 | `04_Assignment_and_Rubric.md` + `.docx` | The assignment brief (task, deliverable, time, deadline, marker) and its checklist, criteria sheet or rubric, ready to share with learners before they start |
-| `quiz.gift` | Moodle GIFT import, with feedback |
+| `quiz.gift` | Moodle GIFT import. Multiple choice, true/false, matching and one-blank fill-in carry their explanation as feedback. A two-blank fill-in is left out, matching keeps only its correct pairs and a short answer becomes an essay question; the build prints a warning that names those items |
 | `questions.csv` | One row per item, for spreadsheets and other LMS imports |
 | `udemy-quiz.md` | The quiz laid out field by field for the Udemy quiz screen (question, answers, explanation, correct answer, related lecture), to paste by hand; items Udemy quizzes cannot hold are listed at the end |
 | `_check/check-report.md` | Every blocking error and warning the checks found |
@@ -53,8 +53,8 @@ An item in `assessment.json` looks like this:
   "options": ["Nothing, it passes all 6 criteria", "The verb cannot be measured",
               "Two tasks that are checked apart share one line", "There is no standard for length"],
   "answer": 2,
-  "explanation": "The script is handed in first and the video later, each checked with a different tool, so they need two lines. The verbs and the 8-minute standard are fine.",
-  "source": "Video 6, section 3.4"
+  "explanation": "The script is handed in first and the video later, each checked with a different tool, so they need two lines (criterion 6). The verbs and the 8-minute standard are fine.",
+  "source": "Video 6, section 3.4, scoring demo table B"
 }
 ```
 
@@ -69,67 +69,80 @@ An item in `assessment.json` looks like this:
 
 ## Install
 
-Pick one of the two Claude Code installs. "Personal" puts the skill in your home folder so every project sees it; "one project only" puts it inside the project folder you run `claude` from. Run the commands in a terminal: macOS and Linux use the bash block, Windows uses the PowerShell block (PowerShell is the default terminal in Windows 10 and 11; Git Bash users can use the bash block).
+### Before you start
 
-**Claude Code (personal, all projects)**
+Install these once. The skill's script runs on your own computer.
 
-macOS, Linux, Git Bash:
+| What | Why | Windows (PowerShell) | macOS | Debian, Ubuntu |
+|---|---|---|---|---|
+| **Git** ([git-scm.com/downloads](https://git-scm.com/downloads)) | to clone the skill | `winget install Git.Git` | `xcode-select --install` | `sudo apt install git` |
+| **Python 3.8 or newer** ([python.org/downloads](https://www.python.org/downloads/)) | runs the checks and builds the files | `winget install Python.Python.3.12` | `brew install python` | `sudo apt install python3 python3-venv` |
+| **Claude Code** ([claude.com/claude-code](https://claude.com/claude-code)) | runs the skill | see the link | see the link | see the link |
 
-```bash
-git clone https://github.com/chuonglife/lesson-assessment-designer-skill ~/.claude/skills/lesson-assessment-designer
-python3 -m pip install -r ~/.claude/skills/lesson-assessment-designer/requirements.txt
-```
+Open a new terminal afterwards so the new PATH is picked up, then check: `git --version` and `python --version` (on macOS and Linux `python3 --version`). On Windows, if `python --version` opens the Microsoft Store or prints "Python was not found", Python is not installed yet: run the `winget` line, or use the python.org installer and tick "Add python.exe to PATH". No Git? Download the ZIP from the green Code button on GitHub and unzip it so that `SKILL.md` ends up in `.claude\skills\lesson-assessment-designer\`, then run only the two Python lines below.
 
-Windows PowerShell:
+Run the commands from the folder of your course project (the folder you start `claude` in). Each block clones the skill, makes a Python virtual environment `.venv` inside the project and installs `python-docx` into it, so nothing touches your system Python. The skill tells Claude to run the script with `.venv` when the project has one; you do not have to activate it. Installing takes under a minute.
 
-```powershell
-git clone https://github.com/chuonglife/lesson-assessment-designer-skill "$HOME\.claude\skills\lesson-assessment-designer"
-python -m pip install -r "$HOME\.claude\skills\lesson-assessment-designer\requirements.txt"
-```
+**Claude Code, one project only (recommended)**
 
-**Claude Code (one project only)**
+Git creates the `.claude/skills` folders for you.
 
-Open the terminal in your project folder first. Git creates the `.claude\skills` folders for you.
-
-macOS, Linux, Git Bash:
+macOS and Linux (bash or zsh):
 
 ```bash
 git clone https://github.com/chuonglife/lesson-assessment-designer-skill .claude/skills/lesson-assessment-designer
-python3 -m pip install -r .claude/skills/lesson-assessment-designer/requirements.txt
-```
-
-Windows PowerShell:
-
-```powershell
-git clone https://github.com/chuonglife/lesson-assessment-designer-skill .claude\skills\lesson-assessment-designer
-python -m pip install -r .claude\skills\lesson-assessment-designer\requirements.txt
-```
-
-**Optional: keep the Python packages in the project (`.venv`)**
-
-The commands above install `python-docx` into your main Python. To keep it inside one project instead, make a virtual environment in the project folder and install into it. The skill tells Claude to use `.venv` when the project has one, so you do not have to activate it.
-
-macOS, Linux, Git Bash (on Git Bash for Windows the Python is `.venv/Scripts/python` instead of `.venv/bin/python`):
-
-```bash
 python3 -m venv .venv
 .venv/bin/python -m pip install -r .claude/skills/lesson-assessment-designer/requirements.txt
 ```
 
-Windows PowerShell (for the personal install, use the `$HOME\.claude\skills\...` path from above):
+Windows (PowerShell, the default terminal in Windows 10 and 11):
 
 ```powershell
+git clone https://github.com/chuonglife/lesson-assessment-designer-skill .claude\skills\lesson-assessment-designer
 python -m venv .venv
-.venv\Scripts\python -m pip install -r .claude\skills\lesson-assessment-designer\requirements.txt
+.\.venv\Scripts\python.exe -m pip install -r .claude\skills\lesson-assessment-designer\requirements.txt
 ```
+
+**Claude Code, personal (all projects)**
+
+The skill goes into your home folder so every project sees it. The `.venv` still belongs to the project you are in.
+
+macOS and Linux (bash or zsh):
+
+```bash
+git clone https://github.com/chuonglife/lesson-assessment-designer-skill ~/.claude/skills/lesson-assessment-designer
+python3 -m venv .venv
+.venv/bin/python -m pip install -r ~/.claude/skills/lesson-assessment-designer/requirements.txt
+```
+
+Windows (PowerShell):
+
+```powershell
+git clone https://github.com/chuonglife/lesson-assessment-designer-skill "$HOME\.claude\skills\lesson-assessment-designer"
+python -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r "$HOME\.claude\skills\lesson-assessment-designer\requirements.txt"
+```
+
+Notes:
+
+- **Already have a `.venv`** in the project (from another skill in this set, for example)? Skip the `venv` line and install into the same one. If you use the skill in several projects, repeat the last two lines in each.
+- **Why a `.venv` and not plain `pip install`**: on Debian 12, Ubuntu 23.04 and newer, and Homebrew Python, `python3 -m pip install` into the system Python stops with `error: externally-managed-environment`. The `.venv` avoids that. On Windows a plain `python -m pip install -r ...requirements.txt` also works, as long as the project has no `.venv` (Claude uses the `.venv` when there is one).
+- **Git Bash on Windows**: use the bash blocks, but type `python` instead of `python3` and `.venv/Scripts/python` instead of `.venv/bin/python`. On Windows `python3` can be a different Python from `python`, or a Microsoft Store shortcut.
+- **"Filename too long" during `git clone` on Windows**: the project folder sits very deep (some OneDrive folders do). Clone with `git clone -c core.longpaths=true <the same address and folder>`, or use a shorter project path.
+- **Word files are optional.** The checks, Markdown, GIFT, CSV and Udemy sheet use only Python's standard library. Without `python-docx` the script still builds those, prints a warning that names the Python it ran with and the exact install command, and writes no `.docx`.
 
 **Check that Claude Code sees it**: start `claude` in the project folder and type `/skills`, or ask "which skills do you have?". **Update later**: run `git pull` inside the skill folder (`git -C .claude/skills/lesson-assessment-designer pull`, or the `$HOME` path for the personal install).
 
 **Claude desktop or web app**
 
-Download `lesson-assessment-designer.skill` from the [latest release](https://github.com/chuonglife/lesson-assessment-designer-skill/releases/latest) and add it under Settings, Capabilities, Skills.
+Download `lesson-assessment-designer.skill` from the [latest release](https://github.com/chuonglife/lesson-assessment-designer-skill/releases/latest) then:
 
-**Requirements**: Python 3.8+. The checks, Markdown, GIFT, CSV and Udemy sheet use only the standard library; Word files need `python-docx` (installed by `requirements.txt`, or skip them with `--no-docx`).
+1. In Settings, Capabilities, turn on "Code execution and file creation". The skill runs a Python script, so it needs it. On Team and Enterprise plans an owner may have to allow skills first.
+2. Open Customize, Skills, press "+", choose "Create skill", then "Upload a skill", and pick the file.
+
+Menu names in the app change now and then. If yours differ, see [Using Skills in Claude](https://support.claude.com/en/articles/12512180-using-skills-in-claude). Nothing else to install. The package holds the skill itself; the built example lives in this repository under `examples/`.
+
+**Requirements**: Python 3.8+ (tested on 3.10, 3.12 and 3.14). Word files need `python-docx` (installed by `requirements.txt`, or skip them with `--no-docx`).
 
 ## Use it
 
@@ -171,9 +184,10 @@ The six steps of writing a test with a blueprint, from teacher education practic
 
 Blocking errors (no test is built until they are fixed):
 
+- A file that is not valid JSON, or a field that is missing or of the wrong kind (an item without `id`, an objective without `code`, points written as text). Each one gets a plain message that names the item and the field, never a Python traceback.
 - An objective that no item or assignment measures; an item that measures no objective.
-- A multiple-choice item without exactly one key, with duplicate options, or with "all of the above", "none of the above" or "both A and B".
-- True/false items worth more than 20% of the test, unbalanced true and false, or giveaway words (always, never, all, none, only, sometimes, usually, may).
+- A multiple-choice item without exactly one key, with duplicate options, or with an option that is "all of the above", "none of the above", "both A and B" or the like. The whole option has to be that phrase: "Group A and B together" is a normal option and passes.
+- True/false items worth more than 20% of the test, unbalanced true and false (with 4 or more of them), or giveaway words (always, never, all, none, every, only, sometimes, usually, often, generally, may, might, most). "May" with a capital is read as the month and passes.
 - A matching item whose answer column is not longer than the prompt column, or that reuses an option.
 - A fill-in-the-blank with no blank, more than two blanks, or a blank at the start.
 - A short answer whose scoring points do not add up.
@@ -182,7 +196,7 @@ Blocking errors (no test is built until they are fixed):
 - A rubric without a descriptor for every level, or criteria that do not add up.
 - No feedback explanation on a selected-response item; long dashes or stock AI phrases.
 
-Warnings (built, flagged for a human decision): the correct option much longer than the distractors, one letter used for over 40% of keys or three in a row, negative stems not in capitals, fewer items than an objective's standard needs, rubric descriptors with nothing countable, and more.
+Warnings (built, flagged for a human decision): the correct option much longer than the distractors, one letter used for over 40% of keys or three in a row, negative stems not in capitals, fewer items than an objective's standard needs, rubric descriptors with nothing countable, items that `quiz.gift` cannot carry in full, Word files skipped because `python-docx` is missing, and more. Every warning is printed and listed in `_check/check-report.md`.
 
 ## Example output
 
@@ -195,6 +209,9 @@ An end-of-lesson test for "Write learning objectives with Bloom's taxonomy", a l
 - [03_Answer_Key_and_Marking_Guide.md](examples/M02-L01-write-objectives-with-blooms-taxonomy/03_Answer_Key_and_Marking_Guide.md)
 - [04_Assignment_and_Rubric.md](examples/M02-L01-write-objectives-with-blooms-taxonomy/04_Assignment_and_Rubric.md), a 4 x 4 analytic rubric for the objective table learners submit
 - [quiz.gift](examples/M02-L01-write-objectives-with-blooms-taxonomy/quiz.gift), [questions.csv](examples/M02-L01-write-objectives-with-blooms-taxonomy/questions.csv) and [udemy-quiz.md](examples/M02-L01-write-objectives-with-blooms-taxonomy/udemy-quiz.md)
+- [_check/check-report.md](examples/M02-L01-write-objectives-with-blooms-taxonomy/_check/check-report.md), 0 blocking errors and 4 warnings
+
+To try the script yourself, copy `assessment.json` into a folder of your own and build there (`python .claude/skills/lesson-assessment-designer/scripts/build_assessment.py my-test/assessment.json`). Building inside the skill folder rewrites its tracked files, and the next `git pull` can stop on them.
 
 ## FAQ
 
@@ -220,7 +237,7 @@ Multiple choice (one best answer, 3 or 4 options), true or false, matching (with
 
 ### Can I import the quiz into Moodle, Canvas, Google Forms or Udemy?
 
-`quiz.gift` imports straight into Moodle (and other tools that read GIFT), with feedback for each question. `questions.csv` has one row per item for spreadsheets, Google Forms add-ons and other LMS importers.
+`quiz.gift` is a Moodle GIFT file (other tools that read GIFT take it too). What it holds: every multiple-choice and true/false question with its explanation as feedback; matching with its correct pairs and explanation, without the extra right-column options, because GIFT has none; a one-blank fill-in with every accepted spelling; a short answer as an essay question, without its scoring points. A two-blank fill-in is left out, because GIFT takes one blank per question; add it in the LMS by hand. The build warns about each of these and names the items. `questions.csv` has one row per item for spreadsheets, Google Forms add-ons and other LMS importers.
 
 Udemy: **you paste the quiz by hand.** Udemy lecture quizzes are multiple choice and are built question by question in the course Curriculum; Udemy publishes no import file for them. `udemy-quiz.md` lays out each question in the order of the Udemy screen (question, answers, the explanation to put under the answers, the correct answer, the related lecture), with the answers already in a spread-out order, so it is copy and paste. True/false items become two-answer questions; matching, fill-in-the-blank and short-answer items are listed at the end for you to rewrite or move to the assignment. Udemy practice tests (paid courses only) do have a CSV bulk upload, but its template is downloaded inside the instructor dashboard and its columns are not published, so the skill does not guess them. The sources are in `references/udemy-export.md`.
 

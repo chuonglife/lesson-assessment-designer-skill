@@ -140,10 +140,12 @@ A distractor must **not** be: absurd, so everyone rules it out; right under some
 
 ## 7. Every check the script runs
 
-**Blocking errors** (nothing is built):
+**Blocking errors** (nothing is built; each is one `ERROR` line that names the item and the field, never a traceback):
+- A file that is missing, not UTF-8 or not valid JSON (the message gives the line and column). A UTF-8 file with a byte order mark, as Windows PowerShell writes it, is read normally.
+- A field that is missing or of the wrong kind: an item, objective, topic or assignment without its `id` or `code`; a topic without `name`; an assignment without `title`; `points` written as text; a `stem` that is not text; a `scoring` entry without `point` and `points`; a criterion without `name` (or `description` in a holistic rubric). Numbers typed without quotes as options, matching entries or accepted answers are not an error: they are read as text.
 - An item without an `objective`, or with an unknown code; an objective `measured_by` test or both with no item; one `measured_by` assignment or both with no assignment.
-- A multiple-choice item without exactly one key; option count different from `options_per_item`; duplicate options; "all of the above", "none of the above", "both A and B", "A and C" and the like.
-- A true or false statement with a giveaway word (always, never, all, none, every, only, sometimes, usually, often, generally, may, might, most); true or false over 20% of the points; with 4 or more true or false items, true and false counts more than one apart.
+- A multiple-choice item without exactly one key; option count different from `options_per_item`; duplicate options; an option that is "all of the above", "none of the above", "both A and B", "A and C" and the like. The whole option must be that phrase (up to three closing words such as "are correct" still count); "Group A and B together" or "Vitamins A and C" pass.
+- A true or false statement with a giveaway word (always, never, all, none, every, only, sometimes, usually, often, generally, may, might, most; "May" with a capital is read as the month and passes); true or false over 20% of the points; with 4 or more true or false items, true and false counts more than one apart.
 - A matching item with the right column not longer than the left; an option used twice; a missing column title.
 - A fill-in item with no blank, more than 2 blanks, a blank at the start, or no accepted answers.
 - A short-answer item without `scoring`, or scoring that does not add up to its points.
@@ -163,4 +165,6 @@ A distractor must **not** be: absurd, so everyone rules it out; right under some
 - A right matching column less than twice the left (with 3 or more prompts).
 - A rubric descriptor with nothing countable in it.
 - No `source` on an item; no model answer on a short-answer item.
+- `quiz.gift` does not carry the whole test (one warning that names the items): a two-blank fill-in is left out, matching keeps only its correct pairs, a short answer imports as an essay question without its scoring points. Multiple choice, true or false, matching and one-blank fill-in carry the `explanation` as feedback.
+- Word files not written because `python-docx` is not installed for the Python that ran the script (the warning gives the install command). `--no-docx` skips them on purpose, without a warning.
 - A formative quiz over 12 items; a summative test under 15 items with no assignment.

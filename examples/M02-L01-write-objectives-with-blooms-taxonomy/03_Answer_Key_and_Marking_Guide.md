@@ -298,7 +298,7 @@ Answer: **TRUE**
 
 **Explanation**: Step 4 of the process: gather 3 to 5 course-level objectives from the largest products; write the check first, then the objective. A table with 8 to 11 lines is the greedy-table mistake.
 
-*Review*: Video 5, section 3.1, step 4; Video 6 close
+*Review*: Video 5, section 3.1, step 4; Video 7 close
 
 ### Q19 · Matching · Routine application · measures K2 · 0.4 points
 
@@ -366,7 +366,7 @@ Any item fewer than 60% of learners get right points to content that was not tau
 - Q16 (K2, Video 6, section 3.4, pause question): ....... % correct
 - Q17 (K2, Video 5, section 3.2, demonstration of step 3): ....... % correct
 - Q18 (K2, Video 5, section 3.2, common mistakes table): ....... % correct
-- Q20 (K2, Video 5, section 3.1, step 4; Video 6 close): ....... % correct
+- Q20 (K2, Video 5, section 3.1, step 4; Video 7 close): ....... % correct
 - Q19 (K2, Video 6, section 3.4, the 6-criterion checklist): ....... % correct
 - Q21 (K1, Video 4, section 2.3, slide 13): ....... % correct
 - Q22 (S1, Video 4, the 4-component formula; Video 5, step 3): ....... % correct

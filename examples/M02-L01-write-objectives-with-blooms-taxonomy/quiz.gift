@@ -140,9 +140,11 @@ $CATEGORY: udemy-course-packaging/M02-L01
   =Be aware of the importance of objectives -> Fails 1 and 4\: unmeasurable verb, no standard
   =Write 3 course-level objectives on the template, each with all 4 components -> Passes all 6 criteria
   =Evaluate a colleague's objective table -> Fails 3 and 4\: no scoring tool, no result to count
+  ####Line 1 uses "be aware of" and has no standard. Line 2 has verb, object, condition (the template) and standard (all 4 components). Line 3 has a good verb but says neither what it is scored with nor what the result looks like; rewrite as "using the 6-criterion checklist, naming the failed criterion of each line".
 }
 
 // Q21: two blanks, GIFT takes one; split into two questions when importing
 
+// Q22: imports as an essay question; the scoring points and model answer are in the marking guide
 ::Q22::Tom teaches air-conditioning repair at a college in Cardiff and is building his first Udemy course. His lesson objective reads\: "Help learners understand the refrigerant charging procedure." Rewrite it as one objective with all 4 components, at the Apply level. {}
 
