@@ -1,11 +1,15 @@
 # Changelog
 
+## v1.1.3 - 2026-11-19
+
+- **English is the default output language,** stated in SKILL.md: another language only when the user asks for it or the material is in it. The docs no longer show a Vietnamese language code as an example, so nobody reads it as a supported option.
+
 ## v1.1.2 - 2026-11-19
 
 The repository is now in English only. The Vietnamese sources stay in the credits, with their titles in English.
 
-- **Vietnamese output mode removed.** `"language": "vi"` no longer builds Vietnamese headings and instructions. The label table keeps its structure with one set, `en`, so another language can be added with the same keys. Any `language` other than `en` is a blocking error that names the fix (set `"en"`, or add a label set to `L`), exit code 1, no traceback. Items can still be written in any language.
-- The Vietnamese giveaway words, banned options, stock phrases and negation words are gone from the checks, along with the comma decimal separator and the Times New Roman font that came with `vi`.
+- **Vietnamese output mode removed.** Headings and instructions are built in English only. The label table keeps its structure with one set, `en`, so another language can be added with the same keys. Any `language` other than `en` is a blocking error that names the fix (set `"en"`, or add a label set to `L`), exit code 1, no traceback. Items can still be written in any language.
+- The Vietnamese giveaway words, banned options, stock phrases and negation words are gone from the checks, along with the comma decimal separator and the Times New Roman font that came with that mode.
 - README: the Vietnamese prompt example is replaced with an English one, and "Can it write tests in other languages?" says what the script does now. SKILL.md tells Claude to keep `language` at `en`. Source titles in the credits are in English and unaccented; the grade-band citation (Circular 04/2022/TT-BLDTBXH) moved from the main text of `references/test-design-process.md` to its Sources line and to the README credits.
 - A `language` that is not text (for example a list) gave a traceback; it is now one `ERROR` line.
 - English output is unchanged: rebuilding the example gives byte-identical Markdown, GIFT, CSV, Udemy sheet and check report.
@@ -14,7 +18,7 @@ The repository is now in English only. The Vietnamese sources stay in the credit
 
 Fixes from an audit that followed README on a clean Windows 11 machine and fed the script broken input.
 
-- **Vietnamese labels no longer crash in a Windows pipe.** With `"language": "vi"`, or an accented name inside an error message, the script died with `UnicodeEncodeError` when its output was piped (Git Bash, Claude Code). It now prints in UTF-8 on every system; `-X utf8` is no longer needed.
+- **Vietnamese labels no longer crash in a Windows pipe.** With the Vietnamese labels of that time, or an accented name inside an error message, the script died with `UnicodeEncodeError` when its output was piped (Git Bash, Claude Code). It now prints in UTF-8 on every system; `-X utf8` is no longer needed.
 - **Missing `python-docx` is said out loud.** The build used to skip the Word files in silence and still print "Built". It now warns, names the Python it ran with and prints the exact install command, on the console and in `_check/check-report.md`. SKILL.md tells Claude what to do with that warning.
 - **Broken input gets a message, not a traceback.** A file that is missing or not valid JSON, an item without `id`, an objective without `code`, a topic without `name`, an assignment without `title`, points written as text, a `scoring` entry without `point`: each is one `ERROR` line that names the item and the field, exit code 1. A JSON saved with a byte order mark (Windows PowerShell does that) is read normally. Numbers typed without quotes as options or accepted answers (`[10, 20, 30, 40]`) are read as text.
 - **`quiz.gift` says what it leaves out.** One warning names every item the GIFT file cannot carry in full: a two-blank fill-in (left out, GIFT takes one blank per question), matching (correct pairs only) and short answer (an essay question without its scoring points). Matching and one-blank fill-in now carry the explanation as feedback. A `->` inside a question or option is written as an arrow character, because Moodle reads `=` together with `->` as a matching question. README and SKILL.md describe the file as it is.
